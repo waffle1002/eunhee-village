@@ -948,7 +948,7 @@ function walkTo(tx, ty){
 }
 function arrive(){ if(!pending){ checkDoor(); return; } const id=pending; pending=null; show(id); sfx('door');
   const dlg = document.getElementById('dialog');
-  if(followView || dlg.getBoundingClientRect().top > innerHeight - 120){ followView = false; setTimeout(() => dlg.scrollIntoView({behavior: reduce ? 'auto' : 'smooth', block: 'start'}), 500); } }
+  if(followView){ followView = false; setTimeout(() => dlg.scrollIntoView({behavior: reduce ? 'auto' : 'smooth', block: 'start'}), 500); } }
 
 cv.addEventListener('click', e => {
   const r = cv.getBoundingClientRect(); const x=(e.clientX-r.left)/r.width*W, y=(e.clientY-r.top)/r.height*H;
@@ -1641,6 +1641,7 @@ function onPeers(change){
   const seen = new Set();
   for(const p of change.peers){
     if(p.isMe || p.kind !== 'viewer') continue;
+    if(!(p.presence||{}).host && cleanName((p.presence||{}).name) === HOST_DEFAULT.name) continue;   // 손님 창의 은희는 숨김
     seen.add(p.peer);
     const pr = p.presence || {};
     let c = peerChars.get(p.peer);
@@ -1891,6 +1892,7 @@ async function saveMe(){
   const name = cleanName(document.getElementById('cc-name').value);
   const st = document.getElementById('cc-status'), btn = document.getElementById('cc-save');
   if(!name){ st.textContent = '이름을 먼저 지어 주세요.'; document.getElementById('cc-name').focus(); return; }
+  if(!isOwner && name === HOST_DEFAULT.name){ st.textContent = '은희는 주인장 이름이에요. 다른 이름을 지어 주세요.'; document.getElementById('cc-name').focus(); return; }
   setMe({name, look:draft.look});
   btn.disabled = true;
   if(db && uid){
@@ -1960,6 +1962,9 @@ function refreshPanels(){ if(current==='mail') renderGuestList(); renderMiniGues
     if(me && !meOwner){ me = null; meAt = 0; meLegacy = false; }
     if(!me){ setMe(HOST_DEFAULT, false); meAt = 0; }
     closePop();
+  } else if(me && me.name === HOST_DEFAULT.name){   // 로그인 안 한 창에 남은 손님 '은희'는 지워요
+    me = null; meAt = 0; try{ localStorage.removeItem('village-me'); }catch(e){}
+    applyLook(player, GHOST); player.name = '???'; updateJoinUI(); setTimeout(maybePopup, 300);
   }
   if(current==='codex') show('codex');
   if(db){
@@ -1967,9 +1972,9 @@ function refreshPanels(){ if(current==='mail') renderGuestList(); renderMiniGues
       villagers.clear();
       for(const d of snap.docs){ const v = d.data(); const name = v && cleanName(v.name); if(name) villagers.set(d.id, {name, look:cleanLook(v.look), at:+v.updatedAt||0, host:v.host===true}); }
       // 주인장이 로그인 전에 손님으로 만든 '은희'는 겹치니까 숨기고, 주인장이면 지워요
-      const hostName = [...villagers.values()].find(v => v.host)?.name;
-      if(hostName) for(const [id, v] of [...villagers]) if(!v.host && id !== 'host' && v.name === hostName && id !== uid){
-        villagers.delete(id); if(isOwner) db.doc('villagers/'+id).delete?.().catch(()=>{});
+      const hostName = [...villagers.values()].find(v => v.host)?.name || HOST_DEFAULT.name;
+      if(hostName) for(const [id, v] of [...villagers]) if(!v.host && id !== 'host' && v.name === hostName && (id !== uid || !isOwner)){
+        villagers.delete(id); if(isOwner || id === uid) db.doc('villagers/'+id).delete?.().catch(()=>{});
       }
       if(uid && !meFromDb){
         const dbMe = villagers.get(uid);
@@ -2020,6 +2025,7 @@ document.getElementById('pop-join').addEventListener('submit', e => {
   e.preventDefault();
   const name = cleanName(document.getElementById('pop-name').value);
   if(!name){ document.getElementById('pop-msg').textContent = '이름을 먼저 지어 주세요.'; return; }
+  if(!isOwner && name === HOST_DEFAULT.name){ document.getElementById('pop-msg').textContent = '은희는 주인장 이름이에요. 주인장이면 아래에서 로그인해 주세요.'; return; }
   closePop(); show('me');
   draft.look = cleanLook({hair:LOOKS.hair[(Math.random()*LOOKS.hair.length)|0], skin:LOOKS.skin[(Math.random()*4)|0], shirt:LOOKS.shirt[(Math.random()*LOOKS.shirt.length)|0], pants:LOOKS.pants[(Math.random()*LOOKS.pants.length)|0], hairStyle:Object.keys(HAIR_LABEL)[(Math.random()*Object.keys(HAIR_LABEL).length)|0], expr:'smile', acc:'none'});
   syncMaker(); document.getElementById('cc-name').value = name; saveMe();
