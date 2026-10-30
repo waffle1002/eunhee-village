@@ -79,9 +79,18 @@ body::after{content:""; position:fixed; inset:0; z-index:-1; pointer-events:none
 .stress-menu{position:absolute; top:calc(100% - 6px); z-index:31; display:flex; gap:6px; background:#fff; border:3px solid var(--frame); border-radius:4px; box-shadow:0 8px 18px #2c3b6b44; padding:6px}
 .stage.shake{animation:stageShake .08s steps(2) 9}
 @keyframes stageShake{0%{transform:translate(-3px,1px)} 50%{transform:translate(3px,-2px)} 100%{transform:translate(-2px,2px)}}
-.bubblewrap{position:absolute; inset:0; z-index:15; background:#DDEBFF66; backdrop-filter:blur(1px); display:grid; grid-template-columns:repeat(8,1fr); grid-template-rows:repeat(4,1fr); gap:4%; padding:6% 5% 4%}
+.bubblewrap{position:absolute; inset:0; z-index:40; background:#DDEBFF66; backdrop-filter:blur(1px); display:grid; grid-template-columns:repeat(8,1fr); grid-template-rows:repeat(4,1fr); gap:4%; padding:6% 5% 4%}
 .bub{border:2px solid #FFFFFFCC; border-radius:50%; background:radial-gradient(circle at 32% 30%, #fff 0 18%, #EAF4FFcc 22% 60%, #BFD6F2aa 100%); cursor:pointer; padding:0; aspect-ratio:1; align-self:center; justify-self:center; width:100%; max-width:56px; touch-action:manipulation}
 .bub.popped{background:#BFD6F244; border-style:dashed; border-color:#ffffff88; transform:scale(.86); cursor:default}
+.mokwrap{position:absolute; inset:0; z-index:40; display:grid; place-items:center; background:#2C3B6B99; touch-action:manipulation}
+.mok{position:relative; width:min(46%,190px); aspect-ratio:16/12; background:none; border:0; padding:0; cursor:pointer}
+.mok svg{width:100%; height:100%; display:block; shape-rendering:crispEdges; filter:drop-shadow(0 4px 0 #1A2244)}
+.mok.hit svg{transform:scale(.94) translateY(3px)}
+.mok-stick{position:absolute; right:-18%; top:-22%; width:40%; transform-origin:90% 90%; transform:rotate(-20deg); transition:transform .06s steps(2); pointer-events:none}
+.mok.hit .mok-stick{transform:rotate(18deg)}
+.mok-count{position:absolute; top:8px; left:0; right:0; text-align:center; margin:0; font-family:var(--font-game); font-size:13px; color:#fff; text-shadow:1px 1px 0 #1A2244}
+.mok-plus{position:absolute; left:50%; top:22%; margin:0; font-family:var(--font-game); font-size:13px; color:#F2C94C; text-shadow:1px 1px 0 #1A2244; pointer-events:none; animation:mokUp .8s steps(6) forwards}
+@keyframes mokUp{from{transform:translate(-50%,0); opacity:1} to{transform:translate(-50%,-34px); opacity:0}}
 .bw-close{position:absolute; top:4px; right:6px; z-index:2; font-family:var(--font-display); font-size:13px; background:#fff; color:var(--frame); border:2px solid var(--frame); border-radius:3px; padding:0 6px; cursor:pointer}
 .bubblewrap.done .bub{opacity:0; transition:opacity .3s}
 .bubblewrap.done{background:#1A104033; backdrop-filter:none}
@@ -571,6 +580,7 @@ button.item:hover{border-color:var(--berry)}
       <div class="stress-menu" id="stress-menu" hidden role="menu" aria-label="스트레스 풀기">
         <button class="tb" type="button" role="menuitem" id="st-scream">으아아아</button>
         <button class="tb" type="button" role="menuitem" id="st-wrap">뽁뽁이</button>
+        <button class="tb" type="button" role="menuitem" id="st-mok">목탁</button>
       </div>
     </div>
     <div class="stage" id="stage" tabindex="0" aria-label="마을. 방향키나 WASD로 걷고, 문 앞에서 Enter를 누르면 들어가요.">
@@ -1204,8 +1214,8 @@ function frame(t){
 
 /* ---------- tiny sound ---------- */
 let soundOn=false, ac=null;
-function sfx(kind){ if(!soundOn) return; try{ ac = ac || new AudioContext(); const o=ac.createOscillator(), gn=ac.createGain(); o.type='square';
-  const notes = kind==='door' ? [660,880] : kind==='coin' ? [988,1319] : kind==='boop' ? [523,392] : kind==='pop' ? [1400] : kind==='scream' ? [392,370,349,330,311,294] : [440];
+function sfx(kind){ if(!soundOn) return; try{ ac = ac || new AudioContext(); const o=ac.createOscillator(), gn=ac.createGain(); o.type = kind==='mok' ? 'triangle' : 'square';
+  const notes = kind==='door' ? [660,880] : kind==='coin' ? [988,1319] : kind==='boop' ? [523,392] : kind==='pop' ? [1400] : kind==='mok' ? [180] : kind==='scream' ? [392,370,349,330,311,294] : [440];
   notes.forEach((f,i)=>o.frequency.setValueAtTime(f, ac.currentTime+i*.08)); gn.gain.setValueAtTime(.06,ac.currentTime); gn.gain.exponentialRampToValueAtTime(.001, ac.currentTime+.08*notes.length+.05);
   o.connect(gn).connect(ac.destination); o.start(); o.stop(ac.currentTime+.08*notes.length+.06);}catch(e){} }
 const tbSound = document.getElementById('tb-sound');
@@ -1542,6 +1552,28 @@ function startWrap(){
 }
 document.getElementById('st-scream').addEventListener('click', startScream);
 document.getElementById('st-wrap').addEventListener('click', startWrap);
+const MOK_SVG = `<svg viewBox="0 0 16 12" aria-hidden="true"><path fill="#7A4A2A" d="M3 1h9v1h2v1h1v6h-1v1h-1v1H3v-1H2V9H1V3h1V2h1z"/><path fill="#C98A52" d="M3 2h9v1h1v1h1v4h-1v1h-1v1H3V9H2V3h1z"/><path fill="#E0A86A" d="M4 3h5v1H4zm-1 1h2v2H3z"/><path fill="#3A2617" d="M5 7h6v1H5z"/><path fill="#7A4A2A" d="M10 4h2v1h-2z"/></svg>`;
+const STICK_SVG = `<svg viewBox="0 0 10 10" aria-hidden="true" shape-rendering="crispEdges"><path fill="#7A4A2A" d="M1 1h3v3H1z"/><path fill="#C98A52" d="M3 3h1v1h1v1h1v1h1v1h1v1h1v1H8V8H7V7H6V6H5V5H4V4H3z"/></svg>`;
+let mokN = 0;
+function startMok(){
+  toggleStress(false);
+  if(stage.querySelector('.mokwrap')) return;
+  const box = document.createElement('div'); box.className = 'mokwrap'; box.setAttribute('role', 'dialog'); box.setAttribute('aria-label', '목탁');
+  box.innerHTML = `<button type="button" class="bw-close" aria-label="목탁 닫기">닫기</button><p class="mok-count">마음의 평화 ${mokN}</p><button type="button" class="mok" aria-label="목탁 치기">${MOK_SVG}<span class="mok-stick">${STICK_SVG}</span></button>`;
+  const MOK_MSG = ['마음의 평화 +1','번뇌 -1','화가 내려간다','고요...','업무 스트레스 -1','부장님도 용서'];
+  box.addEventListener('pointerdown', e => {
+    if(e.target.closest('.bw-close')){ box.remove(); return; }
+    const m = e.target.closest('.mok'); if(!m) return;
+    e.preventDefault(); mokN++; sfx('mok'); haptic(30);
+    m.classList.remove('hit'); void m.offsetWidth; m.classList.add('hit'); setTimeout(() => m.classList.remove('hit'), 90);
+    box.querySelector('.mok-count').textContent = `마음의 평화 ${mokN}`;
+    const t = document.createElement('p'); t.className = 'mok-plus'; t.textContent = MOK_MSG[mokN % 10 === 0 ? 3 : (Math.random()*MOK_MSG.length)|0]; t.style.left = (30 + Math.random()*40) + '%'; t.style.top = (14 + Math.random()*14) + '%'; box.appendChild(t); setTimeout(() => t.remove(), 800);
+    if(mokN % 30 === 0) say(player, '해탈의 경지...', 2000);
+  });
+  stage.appendChild(box);
+}
+document.getElementById('st-mok').addEventListener('click', startMok);
+
 tbHome.addEventListener('click', goHome);
 document.addEventListener('keydown', e => { if(e.key==='Home' && !e.target.closest?.('input,textarea')){ e.preventDefault(); goHome(); } });
 document.getElementById('tb-me')?.addEventListener('click', () => { show('me'); document.getElementById('dialog').scrollIntoView({behavior: reduce?'auto':'smooth', block:'nearest'}); });
