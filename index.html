@@ -1788,9 +1788,9 @@ document.getElementById('st-wrap').addEventListener('click', startWrap);
 const MOK_SVG = `<svg viewBox="0 0 16 12" aria-hidden="true"><path fill="#7A4A2A" d="M3 1h9v1h2v1h1v6h-1v1h-1v1H3v-1H2V9H1V3h1V2h1z"/><path fill="#C98A52" d="M3 2h9v1h1v1h1v4h-1v1h-1v1H3V9H2V3h1z"/><path fill="#E0A86A" d="M4 3h5v1H4zm-1 1h2v2H3z"/><path fill="#3A2617" d="M5 7h6v1H5z"/><path fill="#7A4A2A" d="M10 4h2v1h-2z"/></svg>`;
 const STICK_SVG = `<svg viewBox="0 0 10 10" aria-hidden="true" shape-rendering="crispEdges"><path fill="#7A4A2A" d="M1 1h3v3H1z"/><path fill="#C98A52" d="M3 3h1v1h1v1h1v1h1v1h1v1h1v1H8V8H7V7H6V6H5V5H4V4H3z"/></svg>`;
 let mokN = 0;
-const MOK_BIG = [['나무아미타불','번뇌 -50'],['번뇌 소멸!','마음이 맑아졌어요'],['관세음보살','오늘도 무사히'],['해탈!','회사도 한낱 꿈'],['극락왕생','칼퇴 기원'],['성불하세요','마음의 평화 MAX']];
+const MOK_BIG = [['나무아미타불','번뇌 -30'],['번뇌 소멸!','마음이 맑아졌어요'],['관세음보살','오늘도 무사히'],['해탈!','회사도 한낱 꿈'],['극락왕생','칼퇴 기원'],['성불하세요','마음의 평화 MAX']];
 function mokBig(box){
-  const [a, b] = MOK_BIG[(mokN/50 - 1) % MOK_BIG.length];
+  const [a, b] = MOK_BIG[(mokN/30 - 1) % MOK_BIG.length];
   box.querySelector('.mok-big')?.remove();
   box.insertAdjacentHTML('beforeend', `<div class="mok-big"><i class="mok-halo"></i><p><span>${a}</span><b>${b}</b></p></div>`);
   setTimeout(() => box.querySelector('.mok-big')?.remove(), 2600);
@@ -1812,8 +1812,7 @@ function startMok(){
     m.classList.remove('hit'); void m.offsetWidth; m.classList.add('hit'); setTimeout(() => m.classList.remove('hit'), 90);
     box.querySelector('.mok-count').textContent = `마음의 평화 ${mokN}`;
     const t = document.createElement('p'); t.className = 'mok-plus'; t.textContent = MOK_MSG[mokN % 10 === 0 ? 3 : (Math.random()*MOK_MSG.length)|0]; t.style.left = (30 + Math.random()*40) + '%'; t.style.top = (14 + Math.random()*14) + '%'; box.appendChild(t); setTimeout(() => t.remove(), 800);
-    if(mokN % 50 === 0) mokBig(box);
-    else if(mokN % 30 === 0) say(player, '해탈의 경지...', 2000);
+    if(mokN % 30 === 0) mokBig(box);
   });
   stage.appendChild(box);
 }
