@@ -1192,7 +1192,7 @@ const PETS = [
   {kind:'cat',    name:'냥냥이', x:170, y:ROW_B+2, x0:140, x1:205, f:-1, speed:.35, wait:60, hop:0, tx:0, love:0},
   {kind:'rabbit', name:'토순이', x:290, y:ROW_B+2, x0:220, x1:360, f:1,  speed:.45, wait:30, hop:0, tx:0, love:0},
 ];
-PETS.forEach(p => p.tx = p.x);
+PETS.forEach(p => { p.tx = p.x0 + Math.random()*(p.x1-p.x0); p.wait = 0; });
 function petsTick(){
   for(const p of PETS){
     if(p.hop > 0) p.hop--;
@@ -1200,10 +1200,10 @@ function petsTick(){
     const near = Math.hypot(p.x-player.x, (p.y-player.y)*1.3) < 12;
     if(near && !p.love){ p.love = 120; p.hop = 12; p.f = player.x > p.x ? 1 : -1; sfx('boop');
       for(let k=0;k<6;k++) parts.push({x:p.x, y:p.y-10, vx:(Math.random()-.5)*1.4, vy:-.4-Math.random(), life:30, kind:'heart'}); continue; }
-    if(p.love > 60 || reduce) continue;
+    if(p.love > 60) continue;
     if(p.wait > 0){ p.wait--; continue; }
     const d = p.tx - p.x;
-    if(Math.abs(d) < 1){ p.tx = p.x0 + Math.random()*(p.x1-p.x0); p.wait = 40 + (Math.random()*160|0); continue; }
+    if(Math.abs(d) < 1){ p.tx = p.x0 + Math.random()*(p.x1-p.x0); p.wait = 20 + (Math.random()*80|0); continue; }
     p.f = d > 0 ? 1 : -1;
     // 토끼는 깡충깡충 뛰면서만 움직여요
     if(p.kind === 'rabbit'){ if(!p.hop) p.hop = 14; if(p.hop < 4) continue; }
