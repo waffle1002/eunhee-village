@@ -1765,6 +1765,11 @@ function refreshPanels(){ if(current==='mail') renderGuestList(); renderMiniGues
     db.collection('villagers').onSnapshot(snap => {
       villagers.clear();
       for(const d of snap.docs){ const v = d.data(); const name = v && cleanName(v.name); if(name) villagers.set(d.id, {name, look:cleanLook(v.look), at:+v.updatedAt||0, host:v.host===true}); }
+      // 주인장이 로그인 전에 손님으로 만든 '은희'는 겹치니까 숨기고, 주인장이면 지워요
+      const hostName = [...villagers.values()].find(v => v.host)?.name;
+      if(hostName) for(const [id, v] of [...villagers]) if(!v.host && id !== 'host' && v.name === hostName && id !== uid){
+        villagers.delete(id); if(isOwner) db.doc('villagers/'+id).delete?.().catch(()=>{});
+      }
       if(uid && !meFromDb){
         const dbMe = villagers.get(uid);
         if(dbMe && (!me || (!meLegacy && dbMe.at > meAt))){ meFromDb = true; setMe(dbMe, false); if(current==='mail') renderGuestForm(); }
