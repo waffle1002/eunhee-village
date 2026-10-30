@@ -31,5 +31,9 @@ old = '<p class="owner-only">${pixIcon(\'star\')}은희만 보이는 화면이�
 assert old in s
 s = s.replace(old, old + '\n    ${window.villageLogout ? `<p class="small"><button type="button" class="linkbtn" onclick="villageLogout()">로그아웃</button></p>` : \'\'}')
 
+old = '<button class="btn" type="submit" id="pop-make">입장하기</button></form>'
+assert old in s
+s = s.replace(old, old + '\n      <p class="small" style="text-align:center;margin:6px 0 0"><button type="button" class="linkbtn" onclick="villageOwnerLogin()">주인장이에요</button></p>')
+
 (here / 'index.html').write_text(s, encoding='utf-8')
 print('built', len(s))

@@ -559,6 +559,7 @@ button.item:hover{border-color:var(--berry)}
       <h2 id="pop-title">마을에 들어가려면 이름이 필요해요</h2>
       <p>이름만 지으면 바로 입장! 모습은 들어가서 마음껏 꾸밀 수 있어요.</p>
       <form class="pop-join" id="pop-join"><label class="sr" for="pop-name">캐릭터 이름</label><input id="pop-name" class="nameplate" maxlength="10" required placeholder="이름 짓기" autocomplete="off"><button class="btn" type="submit" id="pop-make">입장하기</button></form>
+      <p class="small" style="text-align:center;margin:6px 0 0"><button type="button" class="linkbtn" onclick="villageOwnerLogin()">주인장이에요</button></p>
       <p class="small" id="pop-msg"></p>
     </div>
   </div>
@@ -1410,7 +1411,9 @@ function avatar(look){
 let db = null, room = null, user = null, uid = null, canWrite = null, isOwner = false, meFromDb = false;
 let me = null;
 let meAt = 0, meLegacy = false;
-try{ const s = JSON.parse(localStorage.getItem('village-me') || 'null'); if(s && cleanName(s.name)){ me = {name:cleanName(s.name), look:cleanLook(s.look)}; meAt = +s.at || 0; meLegacy = !s.at; } }catch(e){}
+let meOwner = false;
+try{ const s = JSON.parse(localStorage.getItem('village-me') || 'null'); if(s && cleanName(s.name)){ me = {name:cleanName(s.name), look:cleanLook(s.look)}; meAt = +s.at || 0; meLegacy = !s.at; meOwner = s.owner === true; } }catch(e){}
+const HOST_DEFAULT = {name:'은희', look:{acc:'flower', expr:'basic', hair:'#3A2617', hairStyle:'long', pants:'#E0566A', shirt:'#FFFFFF', skin:'#F6D2B0'}};
 const villagers = new Map();   // uid -> {name, look}
 const guestDocs = new Map();   // uid -> {name, look, posts, likes}
 const visitDocs = new Map();   // uid -> {day}  오늘 방문자 세기
@@ -1434,7 +1437,7 @@ function updateJoinUI(){
 function setMe(m, persist=true){
   me = {name:cleanName(m.name), look:cleanLook(m.look)};
   applyLook(player, me.look); player.name = me.name;
-  if(persist){ meAt = Date.now(); try{ localStorage.setItem('village-me', JSON.stringify(Object.assign({at:meAt}, me))); }catch(e){} }
+  if(persist){ meAt = Date.now(); try{ localStorage.setItem('village-me', JSON.stringify(Object.assign({at:meAt, owner:isOwner}, me))); }catch(e){} }
   room?.presence({name:me.name, look:me.look}).catch(()=>{});
   avatarCache.clear(); updateJoinUI(); const pp = document.getElementById('pop'); if(pp) pp.hidden = true;
 }
@@ -1752,7 +1755,11 @@ function refreshPanels(){ if(current==='mail') renderGuestList(); renderMiniGues
     try{ canWrite = await user.can('data.write'); }catch(e){}
   }
   updateJoinUI();
-  if(isOwner && !me){ applyLook(player, GHOST); if(current==='me') show('welcome'); }
+  if(isOwner){   // 주인장은 손님 때 만든 캐릭터 말고 은희 캐릭터로 바로 입장
+    if(me && !meOwner){ me = null; meAt = 0; meLegacy = false; }
+    if(!me){ setMe(HOST_DEFAULT, false); meAt = 0; }
+    closePop();
+  }
   if(current==='codex') show('codex');
   if(db){
     db.collection('villagers').onSnapshot(snap => {
