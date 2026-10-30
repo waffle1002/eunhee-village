@@ -596,6 +596,9 @@ body, .dialog, .memo ul, .memo li, .askpop, .pop, .ask p, .foot, .fun-big, #fun-
 .qcard b{font-size:13px} .qgo{font-size:11px; padding:1px 6px}
 .mini-toast{position:fixed; left:50%; top:calc(14px + env(safe-area-inset-top,0px)); transform:translateX(-50%); z-index:60; margin:0; max-width:min(92vw,360px); font-family:var(--font-game); font-size:12px; line-height:1.5; color:#fff; background:#2C3B6B; border:2px solid #fff; outline:2px solid #2C3B6B; border-radius:3px; padding:6px 10px; box-shadow:0 4px 0 #1A2244; text-align:center; animation:toastIn 3.6s steps(4) both}
 @keyframes toastIn{0%{transform:translate(-50%,-30px); opacity:0} 8%{transform:translate(-50%,0); opacity:1} 90%{opacity:1} 100%{opacity:0}}
+.hello-say{white-space:nowrap; min-width:0; overflow:hidden}
+@media (max-width:560px){.toolbar{flex-wrap:nowrap} .toolbar .tb{white-space:nowrap; flex:none}}
+@media (max-width:430px){.tb-long2{display:none}}
 </style>
 </head>
 <body>
@@ -627,7 +630,7 @@ body, .dialog, .memo ul, .memo li, .askpop, .pop, .ask p, .foot, .fun-big, #fun-
       <button class="tb" id="tb-time" type="button" aria-pressed="false">노을<span class="tb-long"> 모드</span></button>
       <button class="tb tb-party" id="tb-party" type="button">파티<span class="tb-long"> 모드</span></button>
       <button class="tb" id="tb-lunch" type="button">점심<span class="tb-long"> 뭐 먹지</span></button>
-      <button class="tb tb-stress" id="tb-stress" type="button" aria-expanded="false" aria-controls="stress-menu" aria-label="스트레스 풀기"><span>스트레스 풀기</span></button>
+      <button class="tb tb-stress" id="tb-stress" type="button" aria-expanded="false" aria-controls="stress-menu" aria-label="스트레스 풀기"><span>스트레스<span class="tb-long2"> 풀기</span></span></button>
       <div class="stress-menu" id="stress-menu" hidden role="menu" aria-label="스트레스 풀기">
         <button class="tb" type="button" role="menuitem" id="st-scream">으아아아</button>
         <button class="tb" type="button" role="menuitem" id="st-wrap">뽁뽁이</button>
@@ -1478,7 +1481,10 @@ function show(id){
   const meCv = document.getElementById('me-cv'); if(meCv){ const c=meCv.getContext('2d'); drawChar(c, Object.assign({x:6, y:19, moving:false, face:1, step:0}, hostLook())); }
   if(id==='mail'){ renderGuestForm(); renderGuestList(); applyPrefill(); }
   if(id==='me') drawPreview();
+  panel.querySelectorAll('.hello-say').forEach(fitLine);
 }
+// 한 줄에 다 들어가게 글씨 크기를 줄여 맞춤
+function fitLine(el){ el.style.fontSize = ''; el.style.whiteSpace = 'nowrap'; let fs = parseFloat(getComputedStyle(el).fontSize); while(el.scrollWidth > el.clientWidth && fs > 10){ fs -= .5; el.style.fontSize = fs + 'px'; } }
 panel.addEventListener('click', e => {
   const go = e.target.closest('[data-go]'); if(go){ goTo(go.dataset.go); return; }
   const cat = e.target.closest('[data-cat]'); if(cat){ blogCat = cat.dataset.cat; show('class'); return; }
