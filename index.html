@@ -1466,7 +1466,7 @@ const onlineEl = document.getElementById('online');
 function updateOnline(){
   const nRes = villagers.size + (me && !(uid && villagers.has(uid)) ? 1 : 0);
   renderWho();
-  onlineEl.innerHTML = `<button type="button" class="hud-btn" id="who-btn" aria-expanded="${!document.getElementById('who').hidden}" aria-controls="who" aria-label="주민 ${nRes}명, 눌러서 목록 보기" title="주민">${pixIcon('face')}<b>${nRes}</b></button><span title="오늘 방문자" aria-label="오늘 방문자 ${todayVisitors()}명">${pixIcon('eye')}<b>${todayVisitors()}</b></span><span title="오늘 주운 커피" aria-label="오늘 커피 ${coffeeGot.length}잔">${pixIcon('coffee')}<b>${coffeeGot.length}/${COFFEE_N}</b></span><span title="편지" aria-label="편지 ${allPosts().length}통">${pixIcon('mail')}<b>${allPosts().length}</b></span><span title="지금 접속" aria-label="지금 ${room ? peerChars.size+1 : 1}명 접속 중"><i class="live-dot" aria-hidden="true"></i><b>${room ? peerChars.size+1 : 1}</b></span>`;
+  onlineEl.innerHTML = `<button type="button" class="hud-btn" id="who-btn" aria-expanded="${!document.getElementById('who').hidden && whoMode==='all'}" aria-controls="who" aria-label="주민 ${nRes}명, 눌러서 목록 보기" title="주민">${pixIcon('face')}<b>${nRes}</b></button><span title="오늘 방문자" aria-label="오늘 방문자 ${todayVisitors()}명">${pixIcon('eye')}<b>${todayVisitors()}</b></span><span title="오늘 주운 커피" aria-label="오늘 커피 ${coffeeGot.length}잔">${pixIcon('coffee')}<b>${coffeeGot.length}/${COFFEE_N}</b></span><span title="편지" aria-label="편지 ${allPosts().length}통">${pixIcon('mail')}<b>${allPosts().length}</b></span><button type="button" class="hud-btn" id="live-btn" aria-expanded="${!document.getElementById('who').hidden && whoMode==='live'}" aria-controls="who" title="지금 접속" aria-label="지금 ${room ? peerChars.size+1 : 1}명 접속 중, 눌러서 보기"><i class="live-dot" aria-hidden="true"></i><b>${room ? peerChars.size+1 : 1}</b></button>`;
 }
 function onPeers(change){
   const seen = new Set();
@@ -1478,7 +1478,7 @@ function onPeers(change){
     if(!c){ c = mkChar({x:COL, y:ROW_A+4, peerId:p.peer}); peerChars.set(p.peer, c); c.fresh = true; }
     c.by = p.by; c.isHost = pr.host === true;
     const nm = cleanName(pr.name); c.name = nm || '손님';
-    applyLook(c, pr.look || GHOST);
+    applyLook(c, pr.look || GHOST); c.look = pr.look || GHOST;
     if(Number.isFinite(pr.x) && Number.isFinite(pr.y)){ c.tx = Math.max(4, Math.min(W-4, pr.x)); c.ty = Math.max(18, Math.min(H-1, pr.y)); if(c.fresh){ c.x=c.tx; c.y=c.ty; c.fresh=false; } }
     if(pr.f === -1 || pr.f === 1) c.face = pr.f;
   }
@@ -1724,8 +1724,17 @@ function renderMiniGuest(){
   ul.innerHTML = tops.length ? tops.map(p=>`<li><img src="${avatar(p.look)}" alt=""><b>${esc(p.name)}</b><em>${esc(p.text)}</em></li>`).join('') : `<li class="gbmini-empty">아직 편지가 없어요. 첫 편지를 남겨 줘요!</li>`;
 }
 function todayVisitors(){ const t = todayKey(); let n = 0; for(const v of visitDocs.values()) if(v && v.day === t) n++; if(!db) n = Math.max(n, 1); return n; }
+let whoMode = 'all';
 function renderWho(){
   const box = document.getElementById('who'); if(!box || box.hidden) return;
+  if(whoMode === 'live'){
+    const list = [{name: me ? me.name : (isOwner ? '은희' : '나'), look: me ? me.look : GHOST, host:isOwner, mine:true}]
+      .concat([...peerChars.values()].map(p => ({name:p.name || '손님', look:p.look || GHOST, host:p.isHost})));
+    box.innerHTML = `<p class="who-head">지금 마을에 <b>${list.length}</b>명</p>
+      <ul>${list.map(x=>`<li class="on"><img src="${avatar(x.look)}" alt=""><span>${esc(x.name)}${x.host?' <i>주인장</i>':''}</span><em>${x.mine?'나':'접속 중'}</em></li>`).join('')}</ul>
+      ${list.length===1 ? '<p class="who-foot">지금은 나 혼자 산책 중이에요</p>' : ''}`;
+    return;
+  }
   const online = new Set([...peerChars.values()].map(p=>p.isHost ? 'host' : p.by).filter(Boolean));
   if(uid) online.add(uid);
   const list = [...villagers].map(([id, v]) => ({id, name:v.name, look:v.look, on:online.has(id), host:v.host}));
@@ -1739,7 +1748,8 @@ function renderWho(){
 }
 document.addEventListener('click', e => {
   const box = document.getElementById('who');
-  if(e.target.closest('#who-btn')){ box.hidden = !box.hidden; renderWho(); updateOnline(); return; }
+  const wb = e.target.closest('#who-btn, #live-btn');
+  if(wb){ const mode = wb.id==='live-btn' ? 'live' : 'all'; box.hidden = !box.hidden && whoMode===mode ? true : false; whoMode = mode; renderWho(); updateOnline(); return; }
   if(!box.hidden && !e.target.closest('#who')){ box.hidden = true; updateOnline(); }
 });
 function refreshPanels(){ if(current==='mail') renderGuestList(); renderMiniGuest(); updateOnline(); }
