@@ -521,6 +521,15 @@ input, textarea{-webkit-user-select:text !important; user-select:text !important
 .gallery figure{margin:0; background:#fff; padding:8px 8px 4px; border-radius:4px; box-shadow:0 3px 8px #7a4a2a22}
 .gallery figure:nth-child(odd){transform:rotate(-1.2deg)} .gallery figure:nth-child(even){transform:rotate(1deg)}
 .gallery figcaption{font-family:var(--font-display); text-align:center; font-size:14px; padding-top:4px}
+/* 사진관: 게임 아이템 카드 */
+.gallery:has(.polaroid){grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:10px}
+.polaroid{position:relative; gap:3px; padding:6px 6px 7px; border:3px solid var(--frame); border-radius:4px; box-shadow:3px 3px 0 var(--frame); font-family:var(--font-game); transform:none !important; transition:transform .1s steps(2)}
+.polaroid:hover, .polaroid:focus-visible{transform:translateY(-2px) !important; box-shadow:3px 5px 0 var(--frame); background:#FFFBEA; outline:none}
+.polaroid:active{transform:translateY(2px) !important; box-shadow:1px 1px 0 var(--frame)}
+.polaroid .thumb{border-radius:2px; border:2px solid var(--frame); box-sizing:border-box}
+.polaroid b{font-family:var(--font-game); font-weight:700; font-size:12px; line-height:1.4; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.polaroid .pol-date{font-family:var(--font-pixel); font-size:9px; color:var(--ink-soft)}
+.pol-no{position:absolute; top:-9px; left:6px; z-index:1; font-family:var(--font-pixel); font-size:9px; line-height:14px; padding:0 5px; background:var(--banana); color:var(--frame); border:2px solid var(--frame); border-radius:2px}
 button.item{font:inherit; color:inherit; text-align:left; cursor:pointer}
 button.item:hover{border-color:var(--berry)}
 .typing{animation:pop .25s ease-out}
@@ -1364,10 +1373,9 @@ const PANELS = {
     <p class="lead">하트가 많을수록 요즘 더 푹 빠져 있는 취미예요.</p>
     <div class="hobbies">${HOBBIES.map((h,i)=>`<div class="hobby"><img alt="" src="${thumb(i,...h.c)}"><div><div class="hobby-head"><h3>${h.name}</h3>${hearts(h.lv)}</div><p>${h.d}</p></div></div>`).join('')}</div>`}),
   nano: () => ({who:'사진관', html:`
-    <h2>찰칵, 은희의 사진 일기</h2>
-    <p class="lead">한 주, 한 달을 사진으로 남기는 일상 포토덤프예요.</p>
+    <p class="lead">한 주, 한 달을 사진으로 남겨요</p>
     <div class="gallery">${SERIES.photodump.map((p,i)=>{ const pal=[['#F59CB0','#E0566A','#F2C94C'],['#F2C94C','#C98A52','#FFF3D3'],['#A9DDF0','#3F7CAC','#FFFFFF'],['#D4F0C4','#4E9A3A','#6B5B95'],['#B9A3F0','#6B5B95','#F59CB0'],['#FFF3D3','#A86B3C','#4E9A3A'],['#F7B79A','#E0566A','#FFF3D3']][i%7];
-      return `<a class="polaroid" href="${p.url}" target="_blank" rel="noopener"><img class="thumb" alt="" src="${thumb(i,...pal)}"><b>${esc(p.title.replace(/^\d{4}\.\d{2}월?(\(\d부\))?\s*/,''))}</b><span>${p.date}</span></a>`; }).join('')}</div>`}),
+      return `<a class="polaroid" href="${p.url}" target="_blank" rel="noopener"><span class="pol-no">No.${String(SERIES.photodump.length - i).padStart(2,'0')}</span><img class="thumb" alt="" src="${thumb(i,...pal)}"><b>${esc(p.title.replace(/^\d{4}\.\d{2}월?(\(\d부\))?\s*/,''))}</b><span class="pol-date">${p.date.slice(2)}</span></a>`; }).join('')}</div>`}),
   codex: () => isOwner ? ({who:'비밀 연구소', html:`
     <p class="owner-only">${pixIcon('star')}은희만 보이는 화면이에요</p>
     ${window.villageLogout ? `<p class="small"><button type="button" class="linkbtn" onclick="villageLogout()">로그아웃</button></p>` : ''}
