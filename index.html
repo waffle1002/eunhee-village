@@ -612,6 +612,8 @@ body, .dialog, .memo ul, .memo li, .askpop, .pop, .ask p, .foot, .fun-big, #fun-
 .polaroid .thumb.real{object-fit:cover; image-rendering:auto}
 .news-a{color:inherit; text-decoration:none}
 .news-a:hover{text-decoration:underline}
+.hud-of{font-style:normal}
+@media (max-width:430px){.hud-of{display:none} .titlebar h1{font-size:16px} .tb-hud{gap:2px} .tb-hud .hud-btn, .tb-hud span{padding:2px 3px}}
 </style>
 </head>
 <body>
@@ -654,6 +656,7 @@ body, .dialog, .memo ul, .memo li, .askpop, .pop, .ask p, .foot, .fun-big, #fun-
       <canvas id="cv" width="384" height="224" aria-label="픽셀 마을 지도. 건물 간판을 누르면 들어갈 수 있어요."></canvas>
       <div class="hint">CLICK ANYWHERE · WASD · ENTER</div>
       <div class="ask" id="tour-ask" hidden role="dialog" aria-live="polite"><p id="tour-q"></p><button type="button" class="qbtn" id="tour-yes">응!</button><button type="button" class="qbtn no" id="tour-no">다음 장소</button><button type="button" class="qbtn no" id="tour-end" aria-label="투어 그만하기">알아서 할게!</button></div>
+      <div class="ask" id="hud-ask" hidden role="dialog" aria-live="polite"><p id="hud-q"></p><button type="button" class="qbtn" id="hud-yes">응!</button><button type="button" class="qbtn no" id="hud-no">다음에</button></div>
       <div class="ask" id="pond-ask" hidden role="dialog" aria-live="polite"><p>연못이 반짝여요. 오늘 운세 뽑으실래요?</p><button type="button" class="qbtn" id="pond-yes">뽑을래요!</button><button type="button" class="qbtn no" id="pond-no">다음에</button></div>
       <div class="ask" id="ask" hidden role="dialog" aria-live="polite"><p id="ask-q"></p><button type="button" class="qbtn" id="ask-yes">들어가기</button><button type="button" class="qbtn no" id="ask-no">아니요</button></div>
       <button type="button" class="join" id="join" hidden><img id="join-ava" alt="">처음 왔어요? <b>내 캐릭터로 입주하기</b></button>
@@ -1165,7 +1168,7 @@ function checkChiikawa(){
   if(chiFound || Math.hypot(HIDE.x-player.x, (HIDE.y-player.y)*1.3) > 8) return;
   chiFound = true; try{ localStorage.setItem('village-chiikawa','1'); }catch(e){}
   for(let k=0;k<16;k++) parts.push({x:HIDE.x, y:HIDE.y-8, vx:(Math.random()-.5)*2, vy:-.4-Math.random()*1.3, life:40, kind: k%2?'heart':'star'});
-  sfx('coin'); player.hop = 10; say(player, '앗 찾았다!', 1600);
+  sfx('coin'); player.hop = 10; say(player, '앗 찾았다!', 1600); updateOnline();
   setTimeout(() => openFun('숨은 친구 발견', '사진관 옆에 숨어 있던 작은 친구', '치이카와를 찾았어요!', '은희의 최애 캐릭터예요. 오늘 운이 좋은 날'), 700);
 }
 function openFun(bar, sub, big, tail){
@@ -1182,6 +1185,22 @@ function openFun(bar, sub, big, tail){
 function funTick(){ checkCoffee(); checkGacha(); checkChiikawa(); petsTick(); checkPond(); }
 /* 연못 운세: 연못 가까이 가면 운세 뽑을지 물어봐요 (한 번 물어보면 잠깐 쉬어요) */
 let pondNext = 0, pondIn = false;
+/* 상단 HUD 커피, 치이카와, 우체통 누르면 마을 위에 작은 대화창 */
+let hudYes = null;
+function hudAsk(q, yes, no, onYes){
+  const a = document.getElementById('hud-ask'); document.getElementById('hud-q').textContent = q;
+  const y = document.getElementById('hud-yes'), n = document.getElementById('hud-no');
+  y.textContent = yes; n.hidden = !no; if(no) n.textContent = no; hudYes = onYes;
+  a.hidden = false; sfx('boop'); stage.scrollIntoView({behavior: reduce?'auto':'smooth', block:'nearest'});
+}
+document.getElementById('hud-yes').addEventListener('click', e => { e.stopPropagation(); document.getElementById('hud-ask').hidden = true; const f = hudYes; hudYes = null; f && f(); });
+document.getElementById('hud-no').addEventListener('click', e => { e.stopPropagation(); document.getElementById('hud-ask').hidden = true; hudYes = null; });
+document.addEventListener('click', e => {
+  const b = e.target.closest('#hud-coffee, #hud-chi, #hud-mail'); if(!b) return;
+  if(b.id === 'hud-coffee') hudAsk(coffeeGot.length >= COFFEE_N ? '오늘 커피 다 모았어요! 내일 또 새로 숨겨 둘게요' : `길에 숨은 커피 ${COFFEE_N}잔을 다 모으면 칼퇴 운세! 오늘 ${coffeeGot.length}/${COFFEE_N}`, '알겠어요', null);
+  else if(b.id === 'hud-chi') hudAsk(chiFound ? '치이카와를 찾았어요! 은희의 최애 캐릭터예요' : '사진관 근처 어딘가에 치이카와가 숨어 있어요. 찾아볼래요?', chiFound ? '좋아요' : '찾아볼게요', null);
+  else hudAsk('편지 쓰고 갈래요?', '응!', '다음에', () => { goTo('mail'); document.getElementById('dialog').scrollIntoView({behavior: reduce?'auto':'smooth', block:'nearest'}); });
+});
 function checkPond(){
   const pa = document.getElementById('pond-ask'); if(!pa) return;
   const inside = ((player.x-148)/50)**2 + ((player.y-170)/36)**2 < 1;
@@ -1480,6 +1499,7 @@ function miniToast(msg){ document.querySelector('.mini-toast')?.remove(); const 
 /* 8x8 pixel icons for the home menu */
 const PIX = {
   eye:  ['........','..BBBB..','.BwwwwB.','BwwBBwwB','BwwBBwwB','.BwwwwB.','..BBBB..','........'],
+  chi:  ['.WW..WW.','WWWWWWWW','WWWWWWWW','WkWWWWkW','WpWkkWpW','WWWWWWWW','.WWWWWW.','..W..W..'],
   coffee:['..w.w...','...w....','wwwwww..','wddddwww','wddddw.w','wwwwwwww','.wwwww..','..dddd..'],
   sound:['...B....','..BB..b.','BBBB.b.b','BwwB.b.b','BwwB.b.b','BBBB.b.b','..BB..b.','...B....'],
   mute: ['...B....','..BB....','BBBB.r.r','BwwB..r.','BwwB..r.','BBBB.r.r','..BB....','...B....'],
@@ -1498,7 +1518,7 @@ const PIX = {
   hog:  ['..d.d...','.ddddd..','dkdkddss','dddddsks','ddddsssk','dkddsss.','.dddss..','.s..s...'],
   arrow:['........','..d.....','..dd....','..ddd...','..ddd...','..dd....','..d.....','........'],
 };
-const PIXC = {r:'#E0566A',w:'#FFF3D3',b:'#3F7CAC',B:'#2C3B6B',k:'#3A2617',d:'#8B5A2B',p:'#F59CB0',P:'#E0566A',y:'#F2C94C',g:'#8FD18A',o:'#E07B39',s:'#F6D2B0'};
+const PIXC = {W:'#FFFFFF',r:'#E0566A',w:'#FFF3D3',b:'#3F7CAC',B:'#2C3B6B',k:'#3A2617',d:'#8B5A2B',p:'#F59CB0',P:'#E0566A',y:'#F2C94C',g:'#8FD18A',o:'#E07B39',s:'#F6D2B0'};
 function pixIcon(n){ const rows = PIX[n]; let r='';
   rows.forEach((row,y)=>[...row].forEach((ch,x)=>{ if(PIXC[ch]) r+=`<rect x="${x}" y="${y}" width="1" height="1" fill="${PIXC[ch]}"/>`; }));
   return `<svg class="pix" viewBox="0 0 8 8" aria-hidden="true" shape-rendering="crispEdges">${r}</svg>`; }
@@ -1920,7 +1940,7 @@ const onlineEl = document.getElementById('online');
 function updateOnline(){
   const nRes = villagers.size + (me && !(uid && villagers.has(uid)) ? 1 : 0);
   renderWho();
-  onlineEl.innerHTML = `<button type="button" class="hud-btn" id="who-btn" aria-expanded="${!document.getElementById('who').hidden && whoMode==='all'}" aria-controls="who" aria-label="주민 ${nRes}명, 눌러서 목록 보기" title="주민">${pixIcon('face')}<b>${nRes}</b></button><span title="오늘 방문자" aria-label="오늘 방문자 ${todayVisitors()}명">${pixIcon('eye')}<b>${todayVisitors()}</b></span><span title="오늘 주운 커피" aria-label="오늘 커피 ${coffeeGot.length}잔">${pixIcon('coffee')}<b>${coffeeGot.length}/${COFFEE_N}</b></span><span title="편지" aria-label="편지 ${allPosts().length}통">${pixIcon('mail')}<b>${allPosts().length}</b></span><button type="button" class="hud-btn" id="live-btn" aria-expanded="${!document.getElementById('who').hidden && whoMode==='live'}" aria-controls="who" title="지금 접속" aria-label="지금 ${room ? peerChars.size+1 : 1}명 접속 중, 눌러서 보기"><i class="live-dot" aria-hidden="true"></i><b>${room ? peerChars.size+1 : 1}</b></button>`;
+  onlineEl.innerHTML = `<button type="button" class="hud-btn" id="who-btn" aria-expanded="${!document.getElementById('who').hidden && whoMode==='all'}" aria-controls="who" aria-label="주민 ${nRes}명, 눌러서 목록 보기" title="주민">${pixIcon('face')}<b>${nRes}</b></button><span title="오늘 방문자" aria-label="오늘 방문자 ${todayVisitors()}명">${pixIcon('eye')}<b>${todayVisitors()}</b></span><button type="button" class="hud-btn" id="hud-coffee" title="오늘 주운 커피" aria-label="오늘 커피 ${coffeeGot.length}잔, 눌러서 설명 보기">${pixIcon('coffee')}<b>${coffeeGot.length}/${COFFEE_N}</b></button><button type="button" class="hud-btn" id="hud-chi" title="숨은 치이카와" aria-label="숨은 치이카와 ${chiFound?'찾음':'아직 못 찾음'}, 눌러서 설명 보기">${pixIcon('chi')}<b>${chiFound?1:0}<i class="hud-of">/1</i></b></button><button type="button" class="hud-btn" id="hud-mail" title="편지" aria-label="편지 ${allPosts().length}통, 눌러서 편지 쓰기">${pixIcon('mail')}<b>${allPosts().length}</b></button><button type="button" class="hud-btn" id="live-btn" aria-expanded="${!document.getElementById('who').hidden && whoMode==='live'}" aria-controls="who" title="지금 접속" aria-label="지금 ${room ? peerChars.size+1 : 1}명 접속 중, 눌러서 보기"><i class="live-dot" aria-hidden="true"></i><b>${room ? peerChars.size+1 : 1}</b></button>`;
 }
 function onPeers(change){
   const seen = new Set();
