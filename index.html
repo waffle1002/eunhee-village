@@ -29,8 +29,8 @@
   --berry:#E0566A;      /* 포인트(버튼) */
   --berry-d:#B23A4E;
   --banana:#F2C94C;
-  --font-display:"Jua", "Gowun Dodum", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
-  --font-body:"Gowun Dodum", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --font-display:"Galmuri11", "Jua", "Gowun Dodum", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --font-body:"Galmuri11", "Gowun Dodum", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
   --font-pixel:"Silkscreen", ui-monospace, monospace;
 }
 *{box-sizing:border-box}
@@ -592,6 +592,10 @@ body, .dialog, .memo ul, .memo li, .askpop, .pop, .ask p, .foot, .fun-big, #fun-
 @media (max-width:560px){.ask{flex-wrap:wrap; justify-content:center; white-space:normal; width:max-content; max-width:92%; row-gap:6px} .ask p{flex-basis:100%; text-align:center}}
 .dialog{font-size:14px}
 .dialog .lead{font-size:13px}
+.qhead h2, .qcount, .qcard b, .qmark, .qgo{font-family:var(--font-game); font-weight:400}
+.qcard b{font-size:13px} .qgo{font-size:11px; padding:1px 6px}
+.mini-toast{position:fixed; left:50%; top:calc(14px + env(safe-area-inset-top,0px)); transform:translateX(-50%); z-index:60; margin:0; max-width:min(92vw,360px); font-family:var(--font-game); font-size:12px; line-height:1.5; color:#fff; background:#2C3B6B; border:2px solid #fff; outline:2px solid #2C3B6B; border-radius:3px; padding:6px 10px; box-shadow:0 4px 0 #1A2244; text-align:center; animation:toastIn 3.6s steps(4) both}
+@keyframes toastIn{0%{transform:translate(-50%,-30px); opacity:0} 8%{transform:translate(-50%,0); opacity:1} 90%{opacity:1} 100%{opacity:0}}
 </style>
 </head>
 <body>
@@ -710,7 +714,7 @@ body, .dialog, .memo ul, .memo li, .askpop, .pop, .ask p, .foot, .fun-big, #fun-
 </div>
 <div class="pop askpop" id="askpop" hidden role="dialog" aria-modal="true" aria-labelledby="qa-t">
   <div class="ask-box"><p class="qa-q" id="qa-q"></p><p class="qa-t" id="qa-t">같이 할래요?</p>
-  <ul class="ask-opts"><li><button type="button" id="qa-yes" class="sel">넹..</button></li><li><button type="button" id="qa-no">다음에..</button></li></ul></div>
+  <ul class="ask-opts"><li><button type="button" id="qa-yes" class="sel">같이 놀아요!</button></li><li><button type="button" id="qa-no">다음 기회에..</button></li></ul></div>
 </div>
 <div class="pop" id="funpop" hidden role="dialog" aria-modal="true" aria-labelledby="fun-big">
   <div class="pop-card fun-card">
@@ -1362,7 +1366,8 @@ const OFFERS = [
   {t:"자격증 공부", d:"시험 공부법 나누고 같이 스터디해요", c:'#C9A267', msg:"같이 스터디하고 싶어요!"},
   {t:"제주 로컬 추천", d:"내향인이 좋아하는 카페와 나들이 코스", c:'#D4F0C4', msg:"제주 추천 코스 궁금해요!"},
 ];
-let prefill = '', labTries = 0, gbAfterMake = false;
+let prefill = '', labTries = 0, gbAfterMake = false, gbSecretNext = false;
+function miniToast(msg){ document.querySelector('.mini-toast')?.remove(); const t = document.createElement('p'); t.className = 'mini-toast'; t.setAttribute('role', 'status'); t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 3600); }
 
 /* 8x8 pixel icons for the home menu */
 const PIX = {
@@ -1458,7 +1463,7 @@ const PANELS = {
     <p class="lead">관심사가 같은 분들은 함께해요. 주인장과 일정 조율 필요</p>
     ${isOwner ? applyInbox() : ''}
     <div class="qgrid">${OFFERS.map((o,i)=>{ const n = applyCount(i), mine = myApplied(i);
-      return `<button type="button" class="qcard${mine?' applied':''}" data-together="${i}" style="--q:${o.c}"><span class="qmark" aria-hidden="true">!</span><b>${o.t}</b><span class="qdesc">${o.d}</span><span class="qgo">${isOwner ? `신청 ${n}` : mine ? '신청함' : '신청'}</span></button>`; }).join('')}</div>`}),
+      return `<button type="button" class="qcard${mine?' applied':''}" data-together="${i}" style="--q:${o.c}"><span class="qmark" aria-hidden="true">!</span><b>${o.t}</b><span class="qdesc">${o.d}</span><span class="qgo">${isOwner ? (n ? `신청 ${n}` : '신청') : mine ? '신청함' : '신청'}</span></button>`; }).join('')}</div>`}),
   mail: PANELS_MAIL,
 };
 function PANELS_MAIL(){ return {who:'우체통 방명록', html:`
@@ -1935,12 +1940,11 @@ function renderGuestList(){
 }
 function askQuest(i){
   const o = OFFERS[i], ap = document.getElementById('askpop'); sfx('boop');
-  if(isOwner){ say(player, `신청 ${applyCount(i)}명이에요`, 1600); return; }
-  const done = myApplied(i); ap.dataset.mode = done ? 'cancel' : 'apply';
+  const done = !isOwner && myApplied(i); ap.dataset.mode = isOwner ? 'preview' : done ? 'cancel' : 'apply';
   document.getElementById('qa-q').textContent = '퀘스트 ' + o.t;
   document.getElementById('qa-t').textContent = done ? '이미 신청했어요. 취소할래요?' : '같이 할래요?';
-  document.getElementById('qa-yes').textContent = done ? '취소할래요..' : '넹..';
-  document.getElementById('qa-no').textContent = done ? '아니요..' : '다음에..';
+  document.getElementById('qa-yes').textContent = done ? '취소할래요..' : '같이 놀아요!';
+  document.getElementById('qa-no').textContent = done ? '아니요..' : '다음 기회에..';
   ap.hidden = false; ap.dataset.q = i; document.getElementById('qa-yes').focus({preventScroll:true});
 }
 function closeAsk(){ document.getElementById('askpop').hidden = true; }
@@ -1963,10 +1967,14 @@ async function saveApply(i, on){
 }
 document.getElementById('qa-yes').addEventListener('click', () => {
   const ap = document.getElementById('askpop'), i = +ap.dataset.q, cancel = ap.dataset.mode === 'cancel'; closeAsk();
+  if(ap.dataset.mode === 'preview'){ miniToast(`손님한테는 이렇게 보여요. 지금 신청 ${applyCount(i)}명`); return; }
   if(!me){ show('me'); const st=document.getElementById('cc-status'); if(st) st.textContent='캐릭터를 만들고 다시 신청해 주세요.'; return; }
   if(cancel){ saveApply(i, false); sfx('boop'); say(player, '신청 취소했어요', 1600); return; }
   saveApply(i, true); sfx('coin'); haptic([40,40,80]);
-  say(player, '신청 완료! 은희한테 알림이 갔어요', 2200);
+  say(player, '신청 완료!', 2000);
+  miniToast('신청했어요! 방명록에 주인장에게만으로 연락처 남겨 주세요');
+  prefill = `[${OFFERS[i].t}] 같이 놀아요! 연락처: `; gbSecretNext = true;
+  setTimeout(() => { goTo('mail'); document.getElementById('dialog').scrollIntoView({behavior: reduce?'auto':'smooth', block:'nearest'}); }, 700);
   if(!reduce) for(let k=0;k<10;k++) parts.push({x:player.x, y:player.y-14, vx:(Math.random()-.5)*2, vy:-.5-Math.random()*1.2, life:28, kind:'heart'});
 });
 document.getElementById('qa-no').addEventListener('click', () => { const c = document.getElementById('askpop').dataset.mode === 'cancel'; closeAsk(); say(player, c ? '계속 같이 해요' : '다음에 같이 해요', 1600); });
@@ -1976,7 +1984,7 @@ document.getElementById('askpop').addEventListener('keydown', e => {
   if(e.key === 'ArrowDown' || e.key === 'ArrowUp'){ e.preventDefault(); const a = document.getElementById('qa-yes'), b = document.getElementById('qa-no'); (document.activeElement === a ? b : a).focus(); }
 });
 document.querySelectorAll('.ask-opts button').forEach(b => b.addEventListener('focus', () => document.querySelectorAll('.ask-opts button').forEach(x => x.classList.toggle('sel', x === b))));
-function applyPrefill(){ const t=document.getElementById('gb-text'); if(t && prefill){ t.value = prefill; prefill=''; t.focus({preventScroll:true}); t.setSelectionRange(t.value.length,t.value.length); } }
+function applyPrefill(){ if(gbSecretNext){ gbSecretNext = false; const sc = document.getElementById('gb-secret'); if(sc) sc.checked = true; } const t=document.getElementById('gb-text'); if(t && prefill){ t.value = prefill; prefill=''; t.focus({preventScroll:true}); t.setSelectionRange(t.value.length,t.value.length); } }
 function renderGuestForm(){
   const wrap = document.getElementById('gb-form-wrap'); if(!wrap) return;
   if(!me){ wrap.innerHTML = `<div class="note">방명록에는 내 캐릭터 이름으로 글을 남겨요. <button class="btn" type="button" data-me style="margin-left:6px">캐릭터 만들기</button></div>`; return; }
