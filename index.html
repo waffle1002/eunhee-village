@@ -957,9 +957,10 @@ const DAY_LUCK = [
   '월급날은 멀어도 오늘은 어떻게든 돼'
 ];
 const DAY_ITEM = ['노란 포스트잇','따뜻한 라떼','줄무늬 양말','파란 볼펜','초코 과자','이어폰','텀블러','손거울','민트 사탕','귀여운 스티커'];
+let lastLuck = -1;
 document.getElementById('d-fortune').addEventListener('click', () => {
-  let me2 = ''; try{ me2 = localStorage.getItem('village-fid') || ''; if(!me2){ me2 = Math.random().toString(36).slice(2); localStorage.setItem('village-fid', me2); } }catch(e){}
-  const r = seeded('luck' + todayKey() + me2), star = 3 + ((r() * 3) | 0), luck = DAY_LUCK[(r() * DAY_LUCK.length) | 0], item = DAY_ITEM[(r() * DAY_ITEM.length) | 0];
+  let li; do{ li = (Math.random() * DAY_LUCK.length) | 0; }while(li === lastLuck); lastLuck = li;
+  const r = Math.random, star = 3 + ((r() * 3) | 0), luck = DAY_LUCK[li], item = DAY_ITEM[(r() * DAY_ITEM.length) | 0];
   sfx('coin'); say(player, '바삭!', 1400);
   openFun('오늘의 운세', '쿠키 안에 쪽지가 들어 있었어', luck, `행운템은 ${item}${(item.charCodeAt(item.length-1)-44032)%28 ? '이라는' : '라는'} 거야. 행운 지수 ${star*20}점`);
 });
