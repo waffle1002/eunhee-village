@@ -1626,7 +1626,7 @@ function sendPresence(){
 /* bumping: hop, hearts, a little line */
 const parts = [];
 /* 2026-10-30 규선이(은희 아는 동생) 발표 끝난 뒤 (한국 시간 16시~18시) 응원 */
-const CHEER_FROM = Date.UTC(2026, 9, 30, 7, 0), CHEER_TO = Date.UTC(2026, 9, 30, 9, 0);
+const CHEER_FROM = Date.UTC(2026, 9, 30, 6, 30), CHEER_TO = Date.UTC(2026, 9, 30, 9, 0);
 const cheerTime = () => { const t = Date.now(); return t >= CHEER_FROM && t < CHEER_TO; };
 const CHEER_LINES = ['규선아 발표 고생했어!','규선이 오늘 발표 멋졌어','떨렸을 텐데 진짜 잘했어, 규선아','발표 끝! 규선이 이제 푹 쉬어','오늘의 주인공은 규선이','규선이한테 박수 짝짝짝','발표한 날은 맛있는 거 먹는 날이야','규선아 오늘 하루 정말 수고 많았어','긴장 풀고 따뜻한 차 한 잔 해','규선이는 잘 해낼 줄 알았어']
 const BUMP_LINES = ['앗!','안녕!','반가워요~','깜짝이야!','하이파이브!','어머 미안!','같이 걸을래요?','혹시 퇴근하세요?','커피 주우러 가는 길?','오늘도 수고했어요'];
