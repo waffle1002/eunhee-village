@@ -246,6 +246,7 @@ textarea{min-height:72px; resize:vertical}
 .dicon:hover span,.dicon:focus-visible span{background:var(--frame); color:#fff}
 .dicon:focus-visible{outline:none; border-color:var(--frame)}
 .dicon i{position:absolute; top:-2px; right:2px; font-style:normal; font-family:var(--font-pixel); font-size:9px; background:var(--berry); color:#fff; padding:0 4px; border-radius:2px}
+@media (max-width:400px){.icons{gap:0 !important} .dicon{padding:6px 0} .dicon span{padding:0 4px; font-size:12.5px}}
 .side{display:grid; gap:14px; position:sticky; top:16px; align-content:start}
 .memo{background:#fff; border:3px solid var(--frame); border-radius:4px; box-shadow:0 6px 14px #2c3b6b33; min-width:0}
 .memo li{white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
@@ -501,6 +502,7 @@ button.item:hover{border-color:var(--berry)}
     <button type="button" class="dicon" data-open="board"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="#7A4A2A" d="M1 3h14v9H1zM3 12h2v3H3zm8 0h2v3h-2z"/><path fill="#C98A52" d="M2 4h12v7H2z"/><path fill="#F59CB0" d="M3 5h3v3H3z"/><path fill="#F2C94C" d="M7 6h3v3H7z"/><path fill="#A9DDF0" d="M11 5h2v3h-2z"/></svg><span>함께해요</span></button>
     <button type="button" class="dicon" data-open-me><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="#F59CB0" d="M3 3h10v11H3z"/><path fill="#F6D2B0" d="M5 5h6v5H5z"/><path fill="#E07B39" d="M5 4h6v2H5zm-1 1h1v3H4z"/><path fill="#2A1B10" d="M6 7h1v1H6zm3 0h1v1H9z"/><path fill="#E0566A" d="M10 2h3v2h-3z"/></svg><span>내 캐릭터</span><i>입주!</i></button>
     <button type="button" class="dicon" data-open="mail"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="#FFFFFF" d="M1 4h14v9H1z"/><path fill="#3F7CAC" d="M1 4h14v1h-1v1h-2v1h-2v1H6V7H4V6H2V5H1z"/></svg><span>방명록</span></button>
+    <button type="button" class="dicon" id="d-fortune"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="#C98A52" d="M3 6h2V5h6v1h2v1h1v3h-1v1h-1v1h-2v1H6v-1H4v-1H3v-1H2V7h1z"/><path fill="#F2C94C" d="M4 7h2V6h4v1h2v1h1v1h-1v1h-1v1H9v1H7v-1H5v-1H4V9H3V8h1z"/><path fill="#E0A23C" d="M7 7h2v4H7z"/><path fill="#FFFFFF" d="M8 3h6v3H8z"/><path fill="#E0566A" d="M9 4h4v1H9z"/></svg><span><span class="tb-long">오늘의 </span>운세</span></button>
   </nav>
   <div class="main">
   <section class="win" aria-label="은희 빌리지 마을">
@@ -938,6 +940,15 @@ const FORTUNES = [
   '오후 3시 졸음, 오늘은 피해 갈 거예요',
   '보고서가 한 번에 통과되는 기적의 날'
 ];
+/* 오늘의 운세: 하루에 하나, 날짜마다 바뀌어요 */
+const DAY_LUCK = ['메일 답장이 술술 써지는 날이에요','오늘 한 말 한마디가 칭찬으로 돌아와요','미뤄둔 일 하나를 시원하게 끝내요','엘리베이터가 딱 맞춰 열리는 하루','회의 시간이 예정보다 짧아져요','생각지 못한 간식이 책상에 도착해요','오늘의 아이디어가 내일의 보고서가 돼요','퇴근길 노을이 유난히 예쁠 거예요','동료와 웃을 일이 하나 생겨요','작은 실수도 귀엽게 넘어가는 날','점심 줄이 유난히 짧아요','오후에 좋은 소식 한 통이 와요'];
+const DAY_ITEM = ['노란 포스트잇','따뜻한 라떼','줄무늬 양말','파란 볼펜','초코 과자','이어폰','텀블러','손거울','민트 사탕','귀여운 스티커'];
+document.getElementById('d-fortune').addEventListener('click', () => {
+  let me2 = ''; try{ me2 = localStorage.getItem('village-fid') || ''; if(!me2){ me2 = Math.random().toString(36).slice(2); localStorage.setItem('village-fid', me2); } }catch(e){}
+  const r = seeded('luck' + todayKey() + me2), star = 3 + ((r() * 3) | 0);
+  sfx('coin'); say(player, '바삭! 쿠키를 깨 봤어요', 1600);
+  openFun('오늘의 운세', '포춘쿠키 속 쪽지를 펼쳐 보니...', DAY_LUCK[(r() * DAY_LUCK.length) | 0], `행운 지수 ${star*20}점, 행운템은 ${DAY_ITEM[(r() * DAY_ITEM.length) | 0]}`);
+});
 function drawCoffees(c){
   coffees.forEach((cf, i) => {
     if(coffeeGot.includes(i)) return;
