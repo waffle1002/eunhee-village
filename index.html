@@ -48,7 +48,7 @@ body{
 body{word-break:keep-all; overflow-wrap:break-word}
 
 /* long text stays in the readable body face; the pixel face is for short labels */
-.dialog .ptitle,.dialog .gbody p,.memo li{font-family:var(--font-body)}
+.dialog .ptitle,.memo li{font-family:var(--font-body)} .dialog .gbody p{font-family:var(--font-game)}
 .dialog .ptitle{font-size:17px; font-weight:400; line-height:1.5}
 .dialog .hobby h3,.dialog .item h3{font-weight:400; color:var(--ink)}
 
@@ -311,22 +311,22 @@ textarea{min-height:72px; resize:vertical}
 .reply-form{margin-top:8px; align-items:center}
 .reply-form input{height:32px; box-sizing:border-box}
 /* 방명록: 픽셀 게임 화면처럼 작고 또박또박 */
-#guest, .gb-form{font-family:var(--font-body)}
+#guest, .gb-form{font-family:var(--font-game)}
 .gb-form{border:3px solid var(--frame); border-radius:4px; box-shadow:3px 3px 0 var(--frame); padding:10px 12px}
 .gb-fields label[for="gb-text"]{font-size:11px; letter-spacing:0}
-.gb-fields label[for="gb-text"] b{font-family:var(--font-display); font-size:13px; font-weight:400}
-.gb-fields textarea{font-family:var(--font-body); font-size:13px; line-height:1.7; min-height:56px; border:2px solid var(--frame); border-radius:3px; background:#FFFDF6}
+.gb-fields label[for="gb-text"] b{font-family:var(--font-game); font-size:12px; font-weight:400}
+.gb-fields textarea{font-family:var(--font-game); font-size:12px; line-height:1.7; min-height:56px; border:2px solid var(--frame); border-radius:3px; background:#FFFDF6}
 .gb-secret{font-size:11px}
 .gb-foot .btn{font-size:13px; padding:4px 12px}
 .gpost{border:2px solid var(--frame); border-radius:4px; box-shadow:2px 2px 0 #2C3B6B55; padding:8px 10px; gap:10px}
 .gpost:not(.reply)::before{top:8px; bottom:8px}
-.ghead b{font-family:var(--font-display); font-size:13px; font-weight:400}
+.ghead b{font-family:var(--font-game); font-size:12px; font-weight:400; color:var(--frame)}
 .gtime{font-size:9px}
-.gbody p{font-size:13px; line-height:1.6; margin:2px 0 6px}
+.gbody p{font-family:var(--font-game); font-size:12px; line-height:1.7; margin:2px 0 6px}
 .gact, .gact .linkbtn{font-size:11px}
 .likebtn{height:20px; font-size:11px; padding:0 7px; border-radius:3px}
 .gpost.reply{border:0; box-shadow:none}
-.gpost.reply .ghead b{font-size:12px}
+.gpost.reply .ghead b{font-size:11px}
 .ava{width:28px; height:46px}
 .qcard.applied{background:#FFF6D8}
 .qcard.applied .qgo{background:var(--berry); color:#fff}
