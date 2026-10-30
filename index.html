@@ -343,7 +343,7 @@ input, textarea{-webkit-user-select:text !important; user-select:text !important
 @media (pointer:fine) and (min-width:761px){ .controls{display:none} }
 @media (max-width:760px){ .hint{display:none} }
 .stage:focus-visible{outline:3px solid var(--banana); outline-offset:2px}
-@media (max-width:900px){ .side{position:static} .desk{grid-template-columns:minmax(0,1fr)} .icons{position:static; grid-auto-flow:column; justify-content:start; overflow-x:auto; gap:4px} .dicon svg{width:32px; height:32px} }
+@media (max-width:900px){ .side{position:static} .desk{grid-template-columns:minmax(0,1fr)} .icons{position:static; grid-auto-flow:column; justify-content:safe center; overflow-x:auto; gap:4px} .dicon svg{width:32px; height:32px} }
 
 /* 패널 내용 */
 .hearts{display:flex; gap:3px}
