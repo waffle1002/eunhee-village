@@ -44,6 +44,13 @@
           }
         }
       }
+    },
+    "visits": {
+      ".read": true,
+      "$uid": {
+        ".write": "auth != null && auth.uid === $uid",
+        ".validate": "newData.child('day').isString() && newData.child('day').val().length <= 12"
+      }
     }
   }
 }
