@@ -1,0 +1,26 @@
+{
+  "rules": {
+    "villagers": {
+      ".read": true,
+      "$uid": {
+        ".write": "auth != null && (auth.uid === $uid || (auth.token.email === 'eunhee100s2@gmail.com' && auth.token.email_verified === true))",
+        ".validate": "newData.child('name').isString() && newData.child('name').val().length <= 10"
+      }
+    },
+    "guestbook": {
+      ".read": true,
+      "$uid": {
+        ".write": "auth != null && (auth.uid === $uid || (auth.token.email === 'eunhee100s2@gmail.com' && auth.token.email_verified === true))",
+        "posts": { ".validate": "newData.numChildren() <= 60" },
+        "likes": { ".validate": "newData.numChildren() <= 300" }
+      }
+    },
+    "presence": {
+      ".read": true,
+      "$tab": {
+        ".write": "auth != null && (!data.exists() || data.child('by').val() === auth.uid)",
+        ".validate": "!newData.exists() || newData.child('by').val() === auth.uid"
+      }
+    }
+  }
+}
