@@ -1,8 +1,7 @@
-/* Firebase 콘솔 > 프로젝트 설정 > 내 앱 > firebaseConfig 값을 여기에 붙여 넣어요 */
 window.VILLAGE_FIREBASE = {
-  apiKey: "",
-  authDomain: "",
-  databaseURL: "",
-  projectId: "",
-  appId: ""
+  "apiKey": "AIzaSyDNPwqGsTfvdAfyA9v4O12Aj-62FLCGGxI",
+  "authDomain": "eunhee-village-20261030.firebaseapp.com",
+  "databaseURL": "https://eunhee-village-20261030-default-rtdb.asia-southeast1.firebasedatabase.app",
+  "projectId": "eunhee-village-20261030",
+  "appId": "1:306021943829:web:6fcfd76c04d62a8066dc1c"
 };
