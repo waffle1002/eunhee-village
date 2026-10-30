@@ -105,6 +105,13 @@ body::after{content:""; position:fixed; inset:0; z-index:-1; pointer-events:none
 .mok.hit .mok-stick{transform:rotate(18deg)}
 .mok-count{position:absolute; top:8px; left:0; right:0; text-align:center; margin:0; font-family:var(--font-game); font-size:13px; color:#fff; text-shadow:1px 1px 0 #1A2244}
 .mok-plus{position:absolute; left:50%; top:22%; margin:0; font-family:var(--font-game); font-size:13px; color:#F2C94C; text-shadow:1px 1px 0 #1A2244; pointer-events:none; animation:mokUp .8s steps(6) forwards}
+.mok-big{position:absolute; inset:0; z-index:3; display:grid; place-items:center; pointer-events:none; background:#F2C94C22}
+.mok-halo{position:absolute; left:50%; top:50%; width:60%; aspect-ratio:1; border-radius:50%; transform:translate(-50%,-50%); background:repeating-conic-gradient(#FFE45D55 0 10deg, transparent 10deg 20deg); animation:mokSpin 2.6s steps(26) both}
+@keyframes mokSpin{0%{transform:translate(-50%,-50%) scale(.2) rotate(0); opacity:0} 15%{opacity:1} 100%{transform:translate(-50%,-50%) scale(1.6) rotate(90deg); opacity:0}}
+.mok-big p{position:relative; margin:0; display:flex; flex-direction:column; align-items:center; gap:4px; font-family:var(--font-game); animation:bwPop .5s steps(5) both}
+.mok-big span{font-size:clamp(22px,5.6vw,38px); color:#FFE45D; text-shadow:3px 0 0 #5A3418,-3px 0 0 #5A3418,0 3px 0 #5A3418,0 -3px 0 #5A3418,3px 3px 0 #5A3418,5px 5px 0 #C98A52; white-space:nowrap}
+.mok-big b{font-weight:400; font-size:clamp(12px,2.6vw,16px); color:#5A3418; background:#FFE45D; border:3px solid #5A3418; padding:0 10px; box-shadow:3px 3px 0 #5A3418}
+@media (prefers-reduced-motion: reduce){.mok-halo, .mok-big p{animation:none}}
 @keyframes mokUp{from{transform:translate(-50%,0); opacity:1} to{transform:translate(-50%,-34px); opacity:0}}
 .bw-close{position:absolute; top:4px; right:6px; z-index:2; font-family:var(--font-display); font-size:13px; background:#fff; color:var(--frame); border:2px solid var(--frame); border-radius:3px; padding:0 6px; cursor:pointer}
 .bubblewrap.done .bw-row{opacity:0; transition:opacity .3s}
@@ -1147,6 +1154,9 @@ function openFun(bar, sub, big, tail){
   const fb = document.getElementById('fun-big'); fb.textContent = big; fb.classList.toggle('long', big.length > 22);
   document.getElementById('fun-tail').textContent = tail;
   p.hidden = false; document.getElementById('fun-ok').focus({preventScroll:true});
+  // 짧은 문장은 한 줄에 다 보이게 글씨 크기를 줄여 맞춤
+  fb.style.fontSize = ''; const one = big.length <= 30; if(one) fb.classList.remove('long'); fb.style.whiteSpace = one ? 'nowrap' : ''; fb.style.contain = one ? 'inline-size' : ''; fb.style.overflow = one ? 'hidden' : ''; fb.style.justifySelf = one ? 'stretch' : '';
+  if(one){ let fs = 20; while(fb.scrollWidth > fb.clientWidth && fs > 11){ fs--; fb.style.fontSize = fs + 'px'; } }
 }
 function funTick(){ checkCoffee(); checkGacha(); checkChiikawa(); }
 
@@ -1662,6 +1672,17 @@ document.getElementById('st-wrap').addEventListener('click', startWrap);
 const MOK_SVG = `<svg viewBox="0 0 16 12" aria-hidden="true"><path fill="#7A4A2A" d="M3 1h9v1h2v1h1v6h-1v1h-1v1H3v-1H2V9H1V3h1V2h1z"/><path fill="#C98A52" d="M3 2h9v1h1v1h1v4h-1v1h-1v1H3V9H2V3h1z"/><path fill="#E0A86A" d="M4 3h5v1H4zm-1 1h2v2H3z"/><path fill="#3A2617" d="M5 7h6v1H5z"/><path fill="#7A4A2A" d="M10 4h2v1h-2z"/></svg>`;
 const STICK_SVG = `<svg viewBox="0 0 10 10" aria-hidden="true" shape-rendering="crispEdges"><path fill="#7A4A2A" d="M1 1h3v3H1z"/><path fill="#C98A52" d="M3 3h1v1h1v1h1v1h1v1h1v1h1v1H8V8H7V7H6V6H5V5H4V4H3z"/></svg>`;
 let mokN = 0;
+const MOK_BIG = [['나무아미타불','번뇌 -50'],['번뇌 소멸!','마음이 맑아졌어요'],['관세음보살','오늘도 무사히'],['해탈!','회사도 한낱 꿈'],['극락왕생','칼퇴 기원'],['성불하세요','마음의 평화 MAX']];
+function mokBig(box){
+  const [a, b] = MOK_BIG[(mokN/50 - 1) % MOK_BIG.length];
+  box.querySelector('.mok-big')?.remove();
+  box.insertAdjacentHTML('beforeend', `<div class="mok-big"><i class="mok-halo"></i><p><span>${a}</span><b>${b}</b></p></div>`);
+  setTimeout(() => box.querySelector('.mok-big')?.remove(), 2600);
+  haptic([40,40,40,40,160]); say(player, a, 2400);
+  if(soundOn) try{ ac = ac || new AudioContext(); [523,659,784,1047].forEach((f,i) => { const o = ac.createOscillator(), g = ac.createGain(), t = ac.currentTime + i*.12; o.type = 'triangle'; o.frequency.value = f; g.gain.setValueAtTime(.08, t); g.gain.exponentialRampToValueAtTime(.001, t + .9); o.connect(g).connect(ac.destination); o.start(t); o.stop(t + .95); }); }catch(e){}
+  if(!reduce) for(let f=0; f<4; f++) setTimeout(() => { const fx = W/2 + (Math.random()-.5)*160, fy = 50 + Math.random()*70;
+    for(let k=0;k<16;k++){ const an = k/16*Math.PI*2, v = 1 + Math.random(); parts.push({x:fx, y:fy, vx:Math.cos(an)*v, vy:Math.sin(an)*v - .3, life:32, kind:'star'}); } }, f*260);
+}
 function startMok(){
   toggleStress(false);
   if(stage.querySelector('.mokwrap')) return;
@@ -1675,7 +1696,8 @@ function startMok(){
     m.classList.remove('hit'); void m.offsetWidth; m.classList.add('hit'); setTimeout(() => m.classList.remove('hit'), 90);
     box.querySelector('.mok-count').textContent = `마음의 평화 ${mokN}`;
     const t = document.createElement('p'); t.className = 'mok-plus'; t.textContent = MOK_MSG[mokN % 10 === 0 ? 3 : (Math.random()*MOK_MSG.length)|0]; t.style.left = (30 + Math.random()*40) + '%'; t.style.top = (14 + Math.random()*14) + '%'; box.appendChild(t); setTimeout(() => t.remove(), 800);
-    if(mokN % 30 === 0) say(player, '해탈의 경지...', 2000);
+    if(mokN % 50 === 0) mokBig(box);
+    else if(mokN % 30 === 0) say(player, '해탈의 경지...', 2000);
   });
   stage.appendChild(box);
 }
