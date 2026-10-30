@@ -35,12 +35,20 @@ window.VILLAGE_OWNER_EMAIL = window.VILLAGE_OWNER_EMAIL || "eunhee100s2@gmail.co
   const db = {
     collection: name => ({
       onSnapshot(cb, err){
-        ready.then(() => rtdb.ref(name).on('value', s => cb(snapOf(s.val())), e => err && err(e)));
+        ready.then(u => {
+          if(name === 'secret' && !isOwnerUser(u)){   // 비밀 편지: 주인장 말고는 내 것만
+            if(!u) return;
+            rtdb.ref('secret/' + u.uid).on('value', s => cb(snapOf(s.val() ? { [u.uid]: s.val() } : {})), e => err && err(e));
+            return;
+          }
+          rtdb.ref(name).on('value', s => cb(snapOf(s.val())), e => err && err(e));
+        });
         return () => rtdb.ref(name).off();
       }
     }),
     doc: path => ({
-      set: async obj => { await ready; return rtdb.ref(path).set(JSON.parse(JSON.stringify(obj))); }
+      set: async obj => { await ready; return rtdb.ref(path).set(JSON.parse(JSON.stringify(obj))); },
+      delete: async () => { await ready; return rtdb.ref(path).remove(); }
     })
   };
 
