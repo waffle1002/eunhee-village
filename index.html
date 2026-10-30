@@ -1051,6 +1051,25 @@ function drawParty(c){
   R(c,bx,0,1,6,'#C9D3F2');
   for(let yy=-5; yy<=5; yy++) for(let xx=-5; xx<=5; xx++){ if(xx*xx+yy*yy > 26) continue; const on = ((xx+yy+(tick>>2)) & 3) === 0; R(c,bx+xx,by+yy,1,1,on ? '#FFFFFF' : ((xx+yy)&1 ? '#AEB8D8' : '#D8DEF0')); }
 }
+/* 으아아아 번개 */
+let boltUntil = 0, bolts = [];
+function makeBolt(x0, x1, y1){ const pts = [[x0, -2]]; let x = x0, y = -2; const n = 7;
+  for(let i=1;i<=n;i++){ y = y1 * i / n; x = x0 + (x1 - x0) * i / n + (i < n ? (Math.random()-.5) * 22 : 0); pts.push([x, y]); } return pts; }
+function startBolt(){
+  boltUntil = tick + 30; bolts = [];
+  [[0, 2], [10, 1], [19, 2]].forEach(([at, n]) => { for(let k=0;k<n;k++){ const tx = k===0 && at===0 ? player.x : 30 + Math.random()*(W-60), ty = k===0 && at===0 ? player.y - 22 : 60 + Math.random()*90;
+    bolts.push({at:tick+at, pts:makeBolt(tx + (Math.random()-.5)*60, tx, ty)}); } });
+}
+function boltLine(c, a, b, col, w){ const [x0,y0] = a, [x1,y1] = b, n = Math.max(Math.abs(x1-x0), Math.abs(y1-y0)) | 0 || 1;
+  for(let i=0;i<=n;i++) R(c, x0 + (x1-x0)*i/n - (w>>1), y0 + (y1-y0)*i/n - (w>>2), w, Math.max(1, w>>1), col); }
+function drawBolt(c){
+  if(tick >= boltUntil) return;
+  for(const b of bolts){ const age = tick - b.at; if(age < 0 || age > 5) continue;
+    if(age < 2 && !reduce){ c.save(); c.globalAlpha = age ? .25 : .45; R(c,0,0,W,H,'#FFFDE8'); c.restore(); }
+    for(let i=0;i<b.pts.length-1;i++){ boltLine(c, b.pts[i], b.pts[i+1], '#FFE45D', 4); boltLine(c, b.pts[i], b.pts[i+1], '#FFFFFF', 2); }
+    const [ex, ey] = b.pts[b.pts.length-1]; if(age === 0 && !reduce) for(let k=0;k<6;k++) parts.push({x:ex, y:ey, vx:(Math.random()-.5)*2.4, vy:-.4-Math.random()*1.2, life:18, kind:'star'});
+  }
+}
 document.getElementById('tb-party').addEventListener('click', startParty);
 document.getElementById('tb-lunch').addEventListener('click', spinLunch);
 
@@ -1085,7 +1104,7 @@ function frame(t){
   if(!reduce) flies.forEach(f=>{ f.t+=.05; f.x+=Math.cos(f.t*.7)*.5; f.y+=Math.sin(f.t*1.3)*.4; if(f.x<0)f.x=W; if(f.x>W)f.x=0; const o=Math.floor(tick/4)%2; R(ctx,f.x-(o?2:1),f.y,o?2:1,2,f.col); R(ctx,f.x+1,f.y,o?2:1,2,f.col); R(ctx,f.x,f.y,1,2,'#3A2617'); });
   duskAmt += ((dusk?1:0) - duskAmt) * (reduce ? 1 : .06);
   if(duskAmt > .01) drawDusk(ctx, duskAmt);
-  drawParty(ctx);
+  drawParty(ctx); drawBolt(ctx);
   // position bubbles
   npcs.forEach((n,i)=>{ bubbles[i].style.left=(n.x/W*100)+'%'; bubbles[i].style.top=((n.y-27)/H*100)+'%'; });
   pBubble.style.left=(player.x/W*100)+'%'; pBubble.style.top=((player.y-27)/H*100)+'%';
@@ -1415,7 +1434,7 @@ stressBtn.addEventListener('click', e => { e.stopPropagation(); toggleStress(str
 document.addEventListener('click', e => { if(!stressMenu.hidden && !e.target.closest('#stress-menu')) toggleStress(false); });
 function startScream(){
   toggleStress(false);
-  say(player, '으아아아아아!!', 2200); player.hop = 10; sfx('scream'); haptic([90,40,90,40,90,40,120,60,220]);
+  say(player, '으아아아아아!!', 2200); player.hop = 10; sfx('scream'); startBolt(); haptic([90,40,90,40,90,40,120,60,220]);
   stage.classList.remove('shake'); void stage.offsetWidth; stage.classList.add('shake');
   setTimeout(() => stage.classList.remove('shake'), 800);
   others().forEach((c, i) => { c.hop = 8; setTimeout(() => say(c, SCREAM_REACT[(Math.random()*SCREAM_REACT.length)|0], 1600), 300 + i*120); });
