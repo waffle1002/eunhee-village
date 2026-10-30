@@ -6,6 +6,9 @@
 <meta name="description" content="은희를 소개합니다. 픽셀 마을 은희 빌리지">
 <meta property="og:title" content="은희 빌리지">
 <meta property="og:description" content="놀다 가요 ~ 캐릭터 만들고 방명록 남기기">
+<meta property="og:image" content="https://waffle1002.github.io/eunhee-village/og.png">
+<meta property="og:url" content="https://waffle1002.github.io/eunhee-village/">
+<meta name="twitter:card" content="summary_large_image">
 <title>은희 빌리지</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&family=Silkscreen&display=swap">
@@ -428,6 +431,10 @@ input, textarea{-webkit-user-select:text !important; user-select:text !important
 .me{display:flex; gap:18px; align-items:center; margin-bottom:12px; flex-wrap:wrap}
 .me > div{flex:1; min-width:0}
 #me-cv{width:72px; height:108px; image-rendering:pixelated; background:var(--paper-2); border-radius:6px}
+.made{display:flex; align-items:center; gap:8px; margin-top:8px; background:#FFF6B8; border:2px solid var(--paper-2); border-radius:6px; padding:6px 10px; color:var(--ink); text-decoration:none; min-width:0}
+.made b{font-family:var(--font-display); font-weight:400; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0}
+.made span{margin-left:auto; flex:none; font-size:12px; color:var(--wood)}
+.made:hover{border-color:var(--berry)}
 .facts{list-style:none; margin:0; padding:0; display:grid; gap:6px}
 .facts li{display:flex; align-items:center; gap:10px; background:#fff; border:2px solid var(--paper-2); border-radius:6px; padding:5px 10px; min-width:0}
 .facts b{flex:none; width:3.2em; font-family:var(--font-display); font-weight:400; color:var(--wood); font-size:14px}
@@ -706,7 +713,7 @@ body, .dialog, .memo ul, .memo li, .askpop, .pop, .ask p, .foot, .fun-big, #fun-
   </aside>
   </div>
  </div>
-  <p class="foot">프로토타입 · 소개·블로그·취미는 라떼 블로그에서 가져왔어요. 사진첩은 아직 예시예요.</p>
+  <p class="foot">블로그에 새 글이 올라오면 다음 날 아침 마을에도 도착해요</p>
 </div>
 <div class="pop" id="pop" hidden role="dialog" aria-modal="true" aria-labelledby="pop-title">
   <div class="pop-card">
@@ -716,7 +723,8 @@ body, .dialog, .memo ul, .memo li, .askpop, .pop, .ask p, .foot, .fun-big, #fun-
       <h2 id="pop-title">마을에 들어가려면 이름이 필요해요</h2>
       <p>이름만 지으면 바로 입장! 모습은 들어가서 마음껏 꾸밀 수 있어요.</p>
       <form class="pop-join" id="pop-join"><label class="sr" for="pop-name">캐릭터 이름</label><input id="pop-name" class="nameplate" maxlength="10" required placeholder="이름 짓기" autocomplete="off"><button class="btn" type="submit" id="pop-make">입장하기</button></form>
-      <p class="small" style="text-align:center;margin:6px 0 0"><button type="button" class="linkbtn" onclick="villageOwnerLogin()">주인장이에요</button></p>
+      <p class="small" id="pop-owner" hidden style="text-align:center;margin:6px 0 0"><button type="button" class="linkbtn" onclick="villageOwnerLogin()">주인장이에요</button></p><script>if(/[?&]owner\b/.test(location.search)) document.getElementById("pop-owner").hidden = false;</script>
+      <p class="small" style="text-align:center;margin:6px 0 0"><button type="button" class="linkbtn" id="pop-skip">구경만 할게요</button></p>
       <p class="small" id="pop-msg"></p>
     </div>
   </div>
@@ -1196,8 +1204,9 @@ function hudAsk(q, yes, no, onYes){
 document.getElementById('hud-yes').addEventListener('click', e => { e.stopPropagation(); document.getElementById('hud-ask').hidden = true; const f = hudYes; hudYes = null; f && f(); });
 document.getElementById('hud-no').addEventListener('click', e => { e.stopPropagation(); document.getElementById('hud-ask').hidden = true; hudYes = null; });
 document.addEventListener('click', e => {
-  const b = e.target.closest('#hud-coffee, #hud-chi, #hud-mail'); if(!b) return;
-  if(b.id === 'hud-coffee') hudAsk(coffeeGot.length >= COFFEE_N ? '오늘 커피 다 모았어요! 내일 또 새로 숨겨 둘게요' : `길에 숨은 커피 ${COFFEE_N}잔을 다 모으면 칼퇴 운세! 오늘 ${coffeeGot.length}/${COFFEE_N}`, '알겠어요', null);
+  const b = e.target.closest('#hud-eye, #hud-coffee, #hud-chi, #hud-mail'); if(!b) return;
+  if(b.id === 'hud-eye') hudAsk(`오늘 ${todayVisitors()}명이 놀러 왔어요! 지금까지 다녀간 손님은 ${Math.max(totalVisitors(), todayVisitors())}명`, '좋아요', null);
+  else if(b.id === 'hud-coffee') hudAsk(coffeeGot.length >= COFFEE_N ? '오늘 커피 다 모았어요! 내일 또 새로 숨겨 둘게요' : `길에 숨은 커피 ${COFFEE_N}잔을 다 모으면 칼퇴 운세! 오늘 ${coffeeGot.length}/${COFFEE_N}`, '알겠어요', null);
   else if(b.id === 'hud-chi') hudAsk(chiFound ? '치이카와를 찾았어요! 은희의 최애 캐릭터예요' : '사진관 근처 어딘가에 치이카와가 숨어 있어요. 찾아볼래요?', chiFound ? '좋아요' : '찾아볼게요', null);
   else hudAsk('편지 쓰고 갈래요?', '응!', '다음에', () => { goTo('mail'); document.getElementById('dialog').scrollIntoView({behavior: reduce?'auto':'smooth', block:'nearest'}); });
 });
@@ -1551,7 +1560,8 @@ const PANELS = {
       <li><b>책</b><span>인생, 모순, 어린왕자, 사랑의 기술</span></li>
       <li><b>요즘</b><span>AI로 위젯 만들기, 독서모임</span></li>
       <li><b>올해</b><span>히말라야 ABC 트레킹 완주</span></li>
-    </ul>`}),
+    </ul>
+    <a class="made" href="https://blog.naver.com/waffle95/224458944708" target="_blank" rel="noopener">${pixIcon('star')}<b>이 마을은 이렇게 만들었어요</b><span>제작기 보기</span></a>`}),
   class: () => {
     const shelves = [['himalaya','히말라야',SERIES.himalaya,'mtn'],['photodump','일상',SERIES.photodump,'camera'],['books','책',SERIES.books,'book'],['ai','AI',SERIES.ai,'bot']];
     const cur = shelves.find(x=>x[0]===libShelf) || shelves[0];
@@ -1866,7 +1876,9 @@ const ACC_LABEL = {none:'없음', bow:'리본', hat:'모자', glasses:'안경', 
 const PART_LABEL = {hair:'머리색', skin:'피부', shirt:'윗옷', pants:'바지'};
 const HAIR_LABEL = {short:'짧은 머리', bob:'단발', long:'긴 머리', pony:'포니테일', twin:'양갈래', bun:'똥머리', curly:'뽀글 머리', spiky:'삐죽 머리', buzz:'까까머리'};
 const EXPR_LABEL = {basic:'기본', smile:'방긋', wink:'윙크', sparkle:'반짝', love:'하트 눈', tongue:'메롱', sleepy:'졸려', wow:'깜짝', grumpy:'심통'};
-const hostLook = () => { for(const v of villagers.values()) if(v.host) return v.look; return GHOST; };
+const hostLook = () => { const h = villagers.get('host'); return h && h.host ? h.look : GHOST; };
+const hostUid = () => (villagers.get('host') || {}).ownerUid || null;
+const isHostPeer = p => (p.presence||{}).host === true && (!window.villageOwnerLogin || (!!hostUid() && p.by === hostUid()));   // 주인장 표시는 진짜 은희 계정만
 const HOST_LOOK = {hair:'#E07B39', skin:SKIN[0], shirt:'#F59CB0', pants:'#5B6EAE', acc:'bow', expr:'smile', hairStyle:'bob'};
 const okColor = v => typeof v==='string' && /^#[0-9A-Fa-f]{6}$/.test(v);
 function cleanLook(l){ l = l && typeof l==='object' ? l : {};
@@ -1881,7 +1893,7 @@ function avatar(look){
   return avatarCache.get(k);
 }
 
-let db = null, room = null, user = null, uid = null, canWrite = null, isOwner = false, meFromDb = false;
+let ownerUid = null, db = null, room = null, user = null, uid = null, canWrite = null, isOwner = false, meFromDb = false;
 let me = null;
 let meAt = 0, meLegacy = false;
 let meOwner = false;
@@ -1937,21 +1949,22 @@ function rebuildResidents(){
 }
 
 const onlineEl = document.getElementById('online');
+function setFavicon(){ let l = document.querySelector('link[rel=icon]'); if(!l){ l = document.createElement('link'); l.rel = 'icon'; document.head.appendChild(l); } l.href = avatar(hostLook()); }
 function updateOnline(){
   const nRes = villagers.size + (me && !(uid && villagers.has(uid)) ? 1 : 0);
   renderWho();
-  onlineEl.innerHTML = `<button type="button" class="hud-btn" id="who-btn" aria-expanded="${!document.getElementById('who').hidden && whoMode==='all'}" aria-controls="who" aria-label="주민 ${nRes}명, 눌러서 목록 보기" title="주민">${pixIcon('face')}<b>${nRes}</b></button><span title="오늘 방문자" aria-label="오늘 방문자 ${todayVisitors()}명">${pixIcon('eye')}<b>${todayVisitors()}</b></span><button type="button" class="hud-btn" id="hud-coffee" title="오늘 주운 커피" aria-label="오늘 커피 ${coffeeGot.length}잔, 눌러서 설명 보기">${pixIcon('coffee')}<b>${coffeeGot.length}/${COFFEE_N}</b></button><button type="button" class="hud-btn" id="hud-chi" title="숨은 치이카와" aria-label="숨은 치이카와 ${chiFound?'찾음':'아직 못 찾음'}, 눌러서 설명 보기">${pixIcon('chi')}<b>${chiFound?1:0}<i class="hud-of">/1</i></b></button><button type="button" class="hud-btn" id="hud-mail" title="편지" aria-label="편지 ${allPosts().length}통, 눌러서 편지 쓰기">${pixIcon('mail')}<b>${allPosts().length}</b></button><button type="button" class="hud-btn" id="live-btn" aria-expanded="${!document.getElementById('who').hidden && whoMode==='live'}" aria-controls="who" title="지금 접속" aria-label="지금 ${room ? peerChars.size+1 : 1}명 접속 중, 눌러서 보기"><i class="live-dot" aria-hidden="true"></i><b>${room ? peerChars.size+1 : 1}</b></button>`;
+  onlineEl.innerHTML = `<button type="button" class="hud-btn" id="who-btn" aria-expanded="${!document.getElementById('who').hidden && whoMode==='all'}" aria-controls="who" aria-label="주민 ${nRes}명, 눌러서 목록 보기" title="주민">${pixIcon('face')}<b>${nRes}</b></button><button type="button" class="hud-btn" id="hud-eye" title="오늘 방문자" aria-label="오늘 방문자 ${todayVisitors()}명, 눌러서 보기">${pixIcon('eye')}<b>${todayVisitors()}</b></button><button type="button" class="hud-btn" id="hud-coffee" title="오늘 주운 커피" aria-label="오늘 커피 ${coffeeGot.length}잔, 눌러서 설명 보기">${pixIcon('coffee')}<b>${coffeeGot.length}/${COFFEE_N}</b></button><button type="button" class="hud-btn" id="hud-chi" title="숨은 치이카와" aria-label="숨은 치이카와 ${chiFound?'찾음':'아직 못 찾음'}, 눌러서 설명 보기">${pixIcon('chi')}<b>${chiFound?1:0}<i class="hud-of">/1</i></b></button><button type="button" class="hud-btn" id="hud-mail" title="편지" aria-label="편지 ${allPosts().length}통, 눌러서 편지 쓰기">${pixIcon('mail')}<b>${allPosts().length}</b></button><button type="button" class="hud-btn" id="live-btn" aria-expanded="${!document.getElementById('who').hidden && whoMode==='live'}" aria-controls="who" title="지금 접속" aria-label="지금 ${room ? peerChars.size+1 : 1}명 접속 중, 눌러서 보기"><i class="live-dot" aria-hidden="true"></i><b>${room ? peerChars.size+1 : 1}</b></button>`;
 }
 function onPeers(change){
   const seen = new Set();
   for(const p of change.peers){
     if(p.isMe || p.kind !== 'viewer') continue;
-    if(!(p.presence||{}).host && cleanName((p.presence||{}).name) === HOST_DEFAULT.name) continue;   // 손님 창의 은희는 숨김
+    if(!isHostPeer(p) && cleanName((p.presence||{}).name) === HOST_DEFAULT.name) continue;   // 손님 창의 은희는 숨김
     seen.add(p.peer);
     const pr = p.presence || {};
     let c = peerChars.get(p.peer);
     if(!c){ c = mkChar({x:COL, y:ROW_A+4, peerId:p.peer}); peerChars.set(p.peer, c); c.fresh = true; }
-    c.by = p.by; c.isHost = pr.host === true;
+    c.by = p.by; c.isHost = isHostPeer(p);
     const nm = cleanName(pr.name); c.name = nm || '손님';
     applyLook(c, pr.look || GHOST); c.look = pr.look || GHOST;
     if(Number.isFinite(pr.x) && Number.isFinite(pr.y)){ c.tx = Math.max(4, Math.min(W-4, pr.x)); c.ty = Math.max(18, Math.min(H-1, pr.y)); if(c.fresh){ c.x=c.tx; c.y=c.ty; c.fresh=false; } }
@@ -2238,7 +2251,7 @@ async function saveMe(){
   setMe({name, look:draft.look});
   btn.disabled = true;
   if(db && uid){
-    try{ await db.doc('villagers/'+uid).set(Object.assign({name, look:me.look, updatedAt:meAt || Date.now()}, isOwner ? {host:true} : {})); st.textContent = `${name}, 은희 빌리지 주민이 됐어요!`; sfx('coin'); }
+    try{ await db.doc('villagers/'+uid).set(Object.assign({name, look:me.look, updatedAt:meAt || Date.now()}, isOwner ? {host:true, ownerUid} : {})); st.textContent = `${name}, 은희 빌리지 주민이 됐어요!`; sfx('coin'); }
     catch(e){ st.textContent = '내 화면에서만 바뀌었어요. 주민 명부에 올리려면 은희에게 초대받아야 해요.'; }
   } else st.textContent = db && uid ? '내 화면에서만 바뀌었어요. 주민 명부에 올리려면 은희에게 초대받아야 해요.' : `${name}(으)로 마을을 걸어요. (이 화면에서만 보여요)`;
   btn.disabled = false;
@@ -2258,6 +2271,7 @@ function renderMiniGuest(){
   const tops = allPosts().filter(p=>!p.re).sort((a,b)=>b.at-a.at).slice(0,3);
   ul.innerHTML = tops.length ? tops.map(p=>`<li><img src="${avatar(p.look)}" alt=""><b>${esc(p.name)}</b><em>${esc(p.text)}</em></li>`).join('') : `<li class="gbmini-empty">아직 편지가 없어요. 첫 편지를 남겨 줘요!</li>`;
 }
+function totalVisitors(){ return db ? visitDocs.size : 1; }
 function todayVisitors(){ const t = todayKey(); let n = 0; for(const v of visitDocs.values()) if(v && v.day === t) n++; if(!db) n = Math.max(n, 1); return n; }
 let whoMode = 'all';
 function renderWho(){
@@ -2296,7 +2310,7 @@ function refreshPanels(){ if(current==='mail') renderGuestList(); renderMiniGues
   if(user){
     try{ uid = await user.id(); }catch(e){}
     try{ isOwner = await user.isOwner(); }catch(e){}
-    if(isOwner) uid = 'host';   // 은희는 어느 기기에서든 같은 자리(villagers/host)에 저장
+    if(isOwner){ try{ ownerUid = await user.id(); }catch(e){} uid = 'host'; }   // 은희는 어느 기기에서든 같은 자리(villagers/host)에 저장
     try{ canWrite = await user.can('data.write'); }catch(e){}
   }
   updateJoinUI();
@@ -2312,7 +2326,7 @@ function refreshPanels(){ if(current==='mail') renderGuestList(); renderMiniGues
   if(db){
     db.collection('villagers').onSnapshot(snap => {
       villagers.clear();
-      for(const d of snap.docs){ const v = d.data(); const name = v && cleanName(v.name); if(name) villagers.set(d.id, {name, look:cleanLook(v.look), at:+v.updatedAt||0, host:v.host===true}); }
+      for(const d of snap.docs){ const v = d.data(); const name = v && cleanName(v.name); if(name) villagers.set(d.id, {name, look:cleanLook(v.look), at:+v.updatedAt||0, host:d.id==='host' && v.host===true, ownerUid:d.id==='host' && typeof v.ownerUid==='string' ? v.ownerUid : null}); }
       // 주인장이 로그인 전에 손님으로 만든 '은희'는 겹치니까 숨기고, 주인장이면 지워요
       const hostName = [...villagers.values()].find(v => v.host)?.name || HOST_DEFAULT.name;
       if(hostName) for(const [id, v] of [...villagers]) if(!v.host && id !== 'host' && v.name === hostName && (id !== uid || !isOwner)){
@@ -2321,9 +2335,10 @@ function refreshPanels(){ if(current==='mail') renderGuestList(); renderMiniGues
       if(uid && !meFromDb){
         const dbMe = villagers.get(uid);
         if(dbMe && (!me || (!meLegacy && dbMe.at > meAt))){ meFromDb = true; setMe(dbMe, false); if(current==='mail') renderGuestForm(); }
-        else if(me){ meFromDb = true; db.doc('villagers/'+uid).set(Object.assign({name:me.name, look:me.look, updatedAt:meAt || Date.now()}, isOwner ? {host:true} : {})).catch(()=>{}); }
+        else if(me){ meFromDb = true; db.doc('villagers/'+uid).set(Object.assign({name:me.name, look:me.look, updatedAt:meAt || Date.now()}, isOwner ? {host:true, ownerUid} : {})).catch(()=>{}); }
       }
-      rebuildResidents(); refreshPanels();
+      if(isOwner && ownerUid && me && villagers.has('host') && hostUid() !== ownerUid) db.doc('villagers/host').set({name:me.name, look:me.look, updatedAt:meAt || Date.now(), host:true, ownerUid}).catch(()=>{});
+      rebuildResidents(); refreshPanels(); setFavicon();
     }, () => {});
     db.collection('visits').onSnapshot(snap => {
       visitDocs.clear(); for(const d of snap.docs){ const v = d.data(); if(v) visitDocs.set(d.id, v); }
@@ -2367,6 +2382,7 @@ function maybePopup(){
   document.getElementById('pop-cute').src = avatar({hair:'#F2C94C', skin:SKIN[0], shirt:'#F59CB0', pants:'#5B6EAE', acc:'cat', expr:'smile'});
   document.getElementById('pop').hidden = false; document.getElementById('pop-name').focus({preventScroll:true});
 }
+document.getElementById('pop-skip').addEventListener('click', () => { closePop(); say(player, '천천히 구경할게요~', 1800); });
 document.getElementById('pop-join').addEventListener('submit', e => {
   e.preventDefault();
   const name = cleanName(document.getElementById('pop-name').value);

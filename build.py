@@ -11,6 +11,9 @@ head = '''<!doctype html>
 <meta name="description" content="은희를 소개합니다. 픽셀 마을 은희 빌리지">
 <meta property="og:title" content="은희 빌리지">
 <meta property="og:description" content="놀다 가요 ~ 캐릭터 만들고 방명록 남기기">
+<meta property="og:image" content="https://waffle1002.github.io/eunhee-village/og.png">
+<meta property="og:url" content="https://waffle1002.github.io/eunhee-village/">
+<meta name="twitter:card" content="summary_large_image">
 '''
 s = s.replace('<meta name="claude:viewport-fit-sides" content="cover">\n', '')
 fb = '''<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -33,7 +36,8 @@ s = s.replace(old, old + '\n    ${window.villageLogout ? `<p class="small"><butt
 
 old = '<button class="btn" type="submit" id="pop-make">입장하기</button></form>'
 assert old in s
-s = s.replace(old, old + '\n      <p class="small" style="text-align:center;margin:6px 0 0"><button type="button" class="linkbtn" onclick="villageOwnerLogin()">주인장이에요</button></p>')
+s = s.replace(old, old + '\n      <p class="small" id="pop-owner" hidden style="text-align:center;margin:6px 0 0"><button type="button" class="linkbtn" onclick="villageOwnerLogin()">주인장이에요</button></p>'
+              + '<script>if(/[?&]owner\\b/.test(location.search)) document.getElementById("pop-owner").hidden = false;</script>')   # 주소 뒤에 ?owner 붙였을 때만 보여요
 
 (here / 'index.html').write_text(s, encoding='utf-8')
 print('built', len(s))

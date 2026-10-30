@@ -4,7 +4,7 @@
       ".read": true,
       "$uid": {
         ".write": "auth != null && (auth.uid === $uid || (auth.token.email === 'eunhee100s2@gmail.com' && auth.token.email_verified === true))",
-        ".validate": "newData.child('name').isString() && newData.child('name').val().length <= 10"
+        ".validate": "newData.child('name').isString() && newData.child('name').val().length <= 10 && (!newData.child('host').exists() || $uid === 'host')"
       }
     },
     "guestbook": {
@@ -14,7 +14,7 @@
         "posts": {
           ".validate": "newData.hasChildren()",
           "$index": {
-            ".validate": "$index.matches(/^(0|[1-9]|[1-5][0-9])$/)"
+            ".validate": "$index.matches(/^(0|[1-9]|[1-5][0-9])$/) && (!newData.child('text').exists() || (newData.child('text').isString() && newData.child('text').val().length <= 300))"
           }
         },
         "likes": {
@@ -29,7 +29,7 @@
       ".read": true,
       "$tab": {
         ".write": "auth != null && (!data.exists() || data.child('by').val() === auth.uid)",
-        ".validate": "!newData.exists() || newData.child('by').val() === auth.uid"
+        ".validate": "!newData.exists() || (newData.child('by').val() === auth.uid && (!newData.child('host').exists() || newData.child('host').val() === false || (auth.token.email === 'eunhee100s2@gmail.com' && auth.token.email_verified === true)))"
       }
     },
     "secret": {
@@ -40,7 +40,7 @@
         "posts": {
           ".validate": "newData.hasChildren()",
           "$index": {
-            ".validate": "$index.matches(/^(0|[1-9]|[12][0-9])$/)"
+            ".validate": "$index.matches(/^(0|[1-9]|[12][0-9])$/) && (!newData.child('text').exists() || (newData.child('text').isString() && newData.child('text').val().length <= 300))"
           }
         }
       }
