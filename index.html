@@ -892,6 +892,12 @@ const npcs = [
 npcs.forEach((n,i) => { n.speed = .35 + rnd()*.25; n.ri = 1; n.expr = ['sparkle','sleepy','basic','smile'][i]; });
 player.expr = 'smile';
 
+const sleepTime = () => { const h = new Date().getHours(); return h >= 23 || h < 5; };
+function drawZzz(c, p){   // 머리 위로 z가 둥실둥실
+  for(let k=0;k<2;k++){ const ph = ((tick + k*30 + (p.x|0)) % 60) / 60, x = Math.round(p.x) + 6 + k*4 + Math.round(ph*3), y = Math.round(p.y) - 13 - k*4 - Math.round(ph*5);
+    if(ph > .85) continue;
+    for(const [dx, col] of [[1,'#2E3A6B'],[0,'#FFFFFF']]){ R(c,x+dx,y+dx,4,1,col); R(c,x+2+dx,y+1+dx,1,1,col); R(c,x+1+dx,y+2+dx,1,1,col); R(c,x+dx,y+3+dx,4,1,col); } }
+}
 function drawChar(c, p){
   const hop = p.hop>0 ? Math.round(Math.sin((10-p.hop)/10*Math.PI)*4) : 0;
   const x = Math.round(p.x) - 5, y = Math.round(p.y) - 16 - hop;
@@ -906,7 +912,7 @@ function drawChar(c, p){
   R(c,x+1,y+2,8,7,p.skin);
   drawHair(c, x, y, p);
   const ex = p.face<0 ? x+2 : x+4;
-  drawFace(c, ex, y, (p.oopsUntil && p.oopsUntil > tick) ? 'wow' : (p.expr || 'basic'));
+  drawFace(c, ex, y, (p.oopsUntil && p.oopsUntil > tick) ? 'wow' : p.sleeping ? 'sleepy' : (p.expr || 'basic'));
   const acc = p.acc || (p.bow ? 'bow' : 'none');
   if(acc==='bow'){ R(c,x+7,y-2,4,3,'#E0566A'); R(c,x+8,y-1,2,1,'#B23A4E'); }
   else if(acc==='hat'){ R(c,x-1,y,12,2,'#3F7CAC'); R(c,x+1,y-3,8,3,'#3F7CAC'); R(c,x+1,y-1,8,1,'#F2C94C'); }
@@ -1341,8 +1347,11 @@ function frame(t){
   else if(keys.size){ walkByKeys(); }
   else player.moving=false;
   followGuide();
+  const night = sleepTime();
   [...npcs, ...residents, ...(showHost && !touring?[host]:[])].forEach(n => {
     if(n.hop>0) n.hop--;
+    n.sleeping = night && residents.includes(n);   // 밤 11시~새벽 5시: 접속 안 한 주민은 쿨쿨
+    if(n.sleeping){ n.moving = false; n.path = []; return; }
     if(n.wait>0){ n.wait--; n.moving=false; return; }
     if(!n.path.length){ n.ri = 1-n.ri; n.path=[n.route[n.ri]]; n.wait = 30 + (rnd()*90|0); }
     stepToward(n);
@@ -1350,14 +1359,14 @@ function frame(t){
   if(player.hop>0) player.hop--;
   for(const c of peerChars.values()) if(c.hop>0) c.hop--;
   movePeers(); sendPresence(); checkBumps(); funTick(); partyTick();
-  if(bubbleTimer % 170 === 85){ const pool=[...residents, ...(showHost?[host]:[])]; if(pool.length){ const r=pool[(Math.random()*pool.length)|0]; say(r, r===host ? host.lines[(Math.random()*3)|0] : [`안녕! 나는 ${r.name}`,`${r.name} 산책 중`,'오늘 날씨 좋다~'][(Math.random()*3)|0], 2200); } }
+  if(bubbleTimer % 170 === 85){ const pool=[...residents.filter(r=>!r.sleeping), ...(showHost?[host]:[])]; if(pool.length){ const r=pool[(Math.random()*pool.length)|0]; say(r, r===host ? host.lines[(Math.random()*3)|0] : [`안녕! 나는 ${r.name}`,`${r.name} 산책 중`,'오늘 날씨 좋다~'][(Math.random()*3)|0], 2200); } }
   if(++bubbleTimer % 110 === 0){ const i=(Math.random()*npcs.length)|0; const n=npcs[i]; bubbles[i].textContent=(cheerTime() && Math.random() < .7 ? CHEER_LINES[(Math.random()*CHEER_LINES.length)|0] : n.lines[(Math.random()*n.lines.length)|0]); bubbles[i].style.opacity=1; setTimeout(()=>bubbles[i].style.opacity=0,2200); }
   ctx.drawImage(g,0,0);
   // water shimmer
   const sh = Math.floor(tick/12)%3; R(ctx,128+sh*6,160+sh,6,1,'#BDE6F8');
   drawCoffees(ctx); drawGacha(ctx); drawChiikawa(ctx); drawPets(ctx);
   const all = [...others(), player].sort((a,b)=>a.y-b.y);
-  all.forEach(p=>drawChar(ctx,p));
+  all.forEach(p=>{ drawChar(ctx,p); if(p.sleeping) drawZzz(ctx,p); });
   drawParts(ctx);
   if(tapMark && tapMark.life-- > 0){ const r = 2 + ((24-tapMark.life)>>3); R(ctx,tapMark.x-r,tapMark.y,r*2+1,1,'#FFF3D3'); R(ctx,tapMark.x,tapMark.y-r,1,r*2+1,'#FFF3D3'); } else tapMark = null;
   if(!reduce) flies.forEach(f=>{ f.t+=.05; f.x+=Math.cos(f.t*.7)*.5; f.y+=Math.sin(f.t*1.3)*.4; if(f.x<0)f.x=W; if(f.x>W)f.x=0; const o=Math.floor(tick/4)%2; R(ctx,f.x-(o?2:1),f.y,o?2:1,2,f.col); R(ctx,f.x+1,f.y,o?2:1,2,f.col); R(ctx,f.x,f.y,1,2,'#3A2617'); });
