@@ -1387,7 +1387,6 @@ const PANELS = {
     const cur = shelves.find(x=>x[0]===libShelf) || shelves[0];
     return {who:'도서관', html:`
     <div class="lib-head"><h2>라떼 블로그</h2><a class="lib-all" href="https://blog.naver.com/waffle95" target="_blank" rel="noopener">전체 보기 ${pixIcon('arrow')}</a></div>
-    <p class="lead">제목을 누르면 글로 슝 가요</p>
     <div class="tags" role="group" aria-label="책장">${shelves.map(([k,n,l,ic])=>`<button type="button" class="chip chip-shelf" data-shelf="${k}" aria-pressed="${k===cur[0]}">${pixIcon(ic)}${n}<b>${l.length}</b></button>`).join('')}</div>
     <ul class="posts${cur[2].length>10?' scroll':''}">${cur[2].map((p,i)=>`<li><span class="date">${cur[0]==='himalaya' ? (i===0?'Intro':i+'일차') : p.date}</span><div><a class="ptitle" href="${p.url}" target="_blank" rel="noopener">${esc(p.title)}</a><p>${esc(p.ex)}</p></div>${p.cat?`<span class="tag">${p.cat}</span>`:''}</li>`).join('')}</ul>`};
   },
