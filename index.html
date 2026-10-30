@@ -793,7 +793,7 @@ function building(c,b){
 /* ---------- characters ---------- */
 const SKIN = ['#F6D2B0','#E9B98F','#C98A5E','#8D5A3B','#9ED37A','#FBF8F3'];
 function mkChar(o){ return Object.assign({x:0,y:0,tx:null,path:[],speed:.7,face:1,step:0,frame:0}, o); }
-const player = mkChar({name:'은희', x:COL, y:ROW_A+4, hair:'#E07B39', shirt:'#F59CB0', pants:'#5B6EAE', skin:SKIN[0], bow:true, speed:1.5});
+const player = mkChar({name:'은희', x:COL, y:ROW_A+4, hair:'#E07B39', shirt:'#F59CB0', pants:'#5B6EAE', skin:SKIN[0], bow:true, speed:2.2});
 const npcs = [
   mkChar({name:'코덱스봇', x:60,  y:ROW_A+4, hair:'#3A2617', shirt:'#6B5B95', pants:'#2C3B6B', skin:SKIN[2], lines:['연구소는 아직 비밀이에요','뭔가 만드는 중...','곧 공개!','버그는 내 친구, 아니 원수','커피 다섯 잔 모으면 칼퇴 운세 나와요'], route:[[40,ROW_A+4],[176,ROW_A+4]]}),
   mkChar({name:'바나나',   x:300, y:ROW_B+4, hair:'#F2C94C', shirt:'#FFFFFF', pants:'#4E9A3A', skin:SKIN[1], lines:['찰칵! 썸네일 나왔어요','바나나 좋아','사진관 옆에 뭔가 꼼지락거려요','점심 고민되면 뽑기 기계로 가요','월요병엔 바나나 우유가 약이래요'], route:[[210,ROW_B+4],[372,ROW_B+4]]}),
@@ -1268,7 +1268,7 @@ function followGuide(){
   if(!touring) return;
   const tx = player.x - (player.face || 1) * 11, ty = player.y, dx = tx - host.x, dy = ty - host.y, d = Math.hypot(dx, dy);
   if(d > 60){ host.x = tx; host.y = ty; }
-  else if(d > 1.5){ const sp = Math.min(d, 2.2); host.x += dx/d*sp; host.y += dy/d*sp; host.moving = true; host.step++; host.face = dx < 0 ? -1 : 1; }
+  else if(d > 1.5){ const sp = Math.min(d, 3); host.x += dx/d*sp; host.y += dy/d*sp; host.moving = true; host.step++; host.face = dx < 0 ? -1 : 1; }
   else { host.moving = false; host.face = player.x < host.x ? -1 : 1; }
 }
 
