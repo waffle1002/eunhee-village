@@ -79,9 +79,24 @@ body::after{content:""; position:fixed; inset:0; z-index:-1; pointer-events:none
 .stress-menu{position:absolute; top:calc(100% - 6px); z-index:31; display:flex; gap:6px; background:#fff; border:3px solid var(--frame); border-radius:4px; box-shadow:0 8px 18px #2c3b6b44; padding:6px}
 .stage.shake{animation:stageShake .08s steps(2) 9}
 @keyframes stageShake{0%{transform:translate(-3px,1px)} 50%{transform:translate(3px,-2px)} 100%{transform:translate(-2px,2px)}}
-.bubblewrap{position:absolute; inset:0; z-index:40; background:#DDEBFF66; backdrop-filter:blur(1px); display:grid; grid-template-columns:repeat(8,1fr); grid-template-rows:repeat(4,1fr); gap:4%; padding:6% 5% 4%}
-.bub{border:2px solid #FFFFFFCC; border-radius:50%; background:radial-gradient(circle at 32% 30%, #fff 0 18%, #EAF4FFcc 22% 60%, #BFD6F2aa 100%); cursor:pointer; padding:0; aspect-ratio:1; align-self:center; justify-self:center; width:100%; max-width:56px; touch-action:manipulation}
-.bub.popped{background:#BFD6F244; border-style:dashed; border-color:#ffffff88; transform:scale(.86); cursor:default}
+.bubblewrap{position:absolute; inset:0; z-index:40; display:flex; flex-direction:column; justify-content:center; gap:2%; padding:9% 4% 5%; touch-action:none;
+  background:linear-gradient(135deg,#ffffff55 0 20%,transparent 20% 50%,#ffffff33 50% 62%,transparent 62%), repeating-linear-gradient(0deg,#ffffff10 0 2px,transparent 2px 6px), #CFE3FA99; backdrop-filter:blur(1.5px)}
+.bw-row{display:flex; justify-content:center; gap:1.6%}
+.bw-row:nth-child(odd){transform:translateX(5.4%)}
+.bub{width:10%; max-width:56px; aspect-ratio:1; padding:0; border:0; cursor:pointer; touch-action:none; -webkit-tap-highlight-color:transparent; background:var(--bub-a) center/100% 100% no-repeat; image-rendering:pixelated; filter:drop-shadow(0 2px 0 #7FA3CF66)}
+.bub:nth-child(3n){--bub-a:var(--bub-b)}
+.bub:hover:not(.popped){transform:translateY(-1px)}
+.bub.popped{background-image:var(--bub-p); filter:none; cursor:default; animation:bubPop .22s steps(3)}
+@keyframes bubPop{0%{transform:scale(1.18,.82)} 50%{transform:scale(.86,1.1)} 100%{transform:scale(1)}}
+.bw-top{position:absolute; top:5px; left:8px; right:62px; display:flex; align-items:center; gap:8px; margin:0; font-family:var(--font-game); font-size:12px; color:#2C3B6B; pointer-events:none}
+.bw-bar{flex:1; max-width:140px; height:8px; background:#fff; border:2px solid #2C3B6B; box-sizing:content-box}
+.bw-bar i{display:block; height:100%; width:0; background:repeating-linear-gradient(90deg,#5DB4F2 0 4px,#8FD0FF 4px 8px); transition:width .15s steps(3)}
+.bw-txt{position:absolute; margin:0; transform:translate(-50%,-50%); font-family:var(--font-game); font-size:clamp(10px,2.4vw,15px); color:#fff; text-shadow:1px 0 #2C3B6B,-1px 0 #2C3B6B,0 1px #2C3B6B,0 -1px #2C3B6B,2px 2px 0 #2C3B6B; pointer-events:none; animation:bwTxt .6s steps(6) forwards; white-space:nowrap}
+@keyframes bwTxt{0%{transform:translate(-50%,-50%) scale(.6)} 30%{transform:translate(-50%,-90%) scale(1.15)} 100%{transform:translate(-50%,-180%) scale(1); opacity:0}}
+.bw-bit{position:absolute; width:3px; height:3px; background:#fff; box-shadow:0 0 0 1px #8FB3DE; pointer-events:none; animation:bwBit .4s steps(4) forwards}
+@keyframes bwBit{to{transform:translate(var(--dx),var(--dy)); opacity:0}}
+.bw-again{position:absolute; left:50%; bottom:10%; transform:translateX(-50%); z-index:3; font-family:var(--font-game); font-size:12px; background:var(--banana); color:var(--ink); border:2px solid var(--frame); border-radius:3px; box-shadow:0 2px 0 var(--frame); padding:2px 10px; cursor:pointer; animation:bwPop .4s steps(4) both}
+@media (prefers-reduced-motion: reduce){.bub.popped, .bw-txt, .bw-bit{animation:none} .bw-txt, .bw-bit{display:none}}
 .mokwrap{position:absolute; inset:0; z-index:40; display:grid; place-items:center; background:#2C3B6B99; touch-action:manipulation}
 .mok{position:relative; width:min(46%,190px); aspect-ratio:16/12; background:none; border:0; padding:0; cursor:pointer}
 .mok svg{width:100%; height:100%; display:block; shape-rendering:crispEdges; filter:drop-shadow(0 4px 0 #1A2244)}
@@ -92,7 +107,7 @@ body::after{content:""; position:fixed; inset:0; z-index:-1; pointer-events:none
 .mok-plus{position:absolute; left:50%; top:22%; margin:0; font-family:var(--font-game); font-size:13px; color:#F2C94C; text-shadow:1px 1px 0 #1A2244; pointer-events:none; animation:mokUp .8s steps(6) forwards}
 @keyframes mokUp{from{transform:translate(-50%,0); opacity:1} to{transform:translate(-50%,-34px); opacity:0}}
 .bw-close{position:absolute; top:4px; right:6px; z-index:2; font-family:var(--font-display); font-size:13px; background:#fff; color:var(--frame); border:2px solid var(--frame); border-radius:3px; padding:0 6px; cursor:pointer}
-.bubblewrap.done .bub{opacity:0; transition:opacity .3s}
+.bubblewrap.done .bw-row{opacity:0; transition:opacity .3s}
 .bubblewrap.done{background:#1A104033; backdrop-filter:none}
 #fun-big.long{font-size:18px; line-height:1.6; word-break:keep-all; color:var(--ink)}
 .bw-msg{position:absolute; inset:0; margin:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; pointer-events:none; font-family:var(--font-display); animation:bwPop .5s steps(5) both}
@@ -563,8 +578,10 @@ button.item:hover{border-color:var(--berry)}
 @media (prefers-reduced-motion:reduce){.typing{animation:none}}
 @media (max-width:560px){ .titlebar p{display:none} .hint{display:none} }
 /* v75: 패널 안 작은 글씨 전부 픽셀 글씨 */
-.dialog, .memo ul, .askpop, .pop, .ask p{font-family:var(--font-game); letter-spacing:0}
-.ask .qbtn{font-family:var(--font-game)}
+body, .dialog, .memo ul, .memo li, .askpop, .pop, .ask p, .foot, .fun-big, #fun-big.long{font-family:var(--font-game); letter-spacing:0}
+#funpop #fun-big{font-family:var(--font-game); font-size:20px}
+#funpop #fun-big.long{font-size:16px}
+.ask .qbtn, .bw-msg, .bw-close{font-family:var(--font-game)}
 @media (max-width:560px){.ask{flex-wrap:wrap; justify-content:center; white-space:normal; width:max-content; max-width:92%; row-gap:6px} .ask p{flex-basis:100%; text-align:center}}
 .dialog{font-size:14px}
 .dialog .lead{font-size:13px}
@@ -1557,21 +1574,87 @@ function startScream(){
   others().forEach((c, i) => { c.hop = 8; setTimeout(() => say(c, SCREAM_REACT[(Math.random()*SCREAM_REACT.length)|0], 1600), 300 + i*120); });
   if(!reduce) for(let k=0;k<14;k++) parts.push({x:player.x, y:player.y-14, vx:(Math.random()-.5)*3, vy:-.6-Math.random()*1.6, life:26, kind:'star'});
 }
+/* 뽁뽁이: 픽셀 버블 그림을 만들어 두고, 문지르듯 드래그해도 터지게 */
+function bubSvg(kind){
+  const N=14, c=6.5, px=[];
+  for(let y=0;y<N;y++) for(let x=0;x<N;x++){
+    const d=Math.hypot(x-c, y-c); if(d>6.9) continue;
+    let col;
+    if(kind==='p'){
+      if(d>5.9){ if((x+y)%3===0) continue; col='#9DBCE2'; }
+      else if((y===7 && x>3 && x<11) || (y===6 && (x===4||x===10)) || (y===8 && (x===5||x===9))) col='#A9C6EA';
+      else col='#EAF3FFAA';
+    } else {
+      if(d>5.9) col = kind==='b' ? '#7FA9DB' : '#8FB3DE';
+      else if((x===3&&y>=3&&y<=5)||(y===3&&x>=3&&x<=5)||(x===4&&y===4)) col='#FFFFFF';
+      else if(x===8&&y===3) col='#FFFFFF';
+      else if(d>4.6 && x+y>14) col = kind==='b' ? '#B5D2F2' : '#C3DBF5';
+      else col = kind==='b' ? '#E2EFFF' : '#EEF6FF';
+    }
+    px.push(`<rect x="${x}" y="${y}" width="1" height="1" fill="${col}"/>`);
+  }
+  return `url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${N} ${N}" shape-rendering="crispEdges">${px.join('')}</svg>`)}")`;
+}
+document.documentElement.style.setProperty('--bub-a', bubSvg('a'));
+document.documentElement.style.setProperty('--bub-b', bubSvg('b'));
+document.documentElement.style.setProperty('--bub-p', bubSvg('p'));
+function popSound(){
+  if(!soundOn) return;
+  try{ ac = ac || new AudioContext(); const t = ac.currentTime, len = Math.floor(ac.sampleRate*.05);
+    const buf = ac.createBuffer(1, len, ac.sampleRate), d = buf.getChannelData(0);
+    for(let i=0;i<len;i++) d[i] = (Math.random()*2-1) * Math.pow(1-i/len, 4);
+    const src = ac.createBufferSource(); src.buffer = buf;
+    const bp = ac.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1400 + Math.random()*1600; bp.Q.value = 1.4;
+    const g = ac.createGain(); g.gain.setValueAtTime(.5, t); g.gain.exponentialRampToValueAtTime(.001, t+.06);
+    src.connect(bp).connect(g).connect(ac.destination); src.start(t);
+    const o = ac.createOscillator(), og = ac.createGain(); o.type = 'sine';
+    o.frequency.setValueAtTime(900 + Math.random()*500, t); o.frequency.exponentialRampToValueAtTime(220, t+.05);
+    og.gain.setValueAtTime(.08, t); og.gain.exponentialRampToValueAtTime(.001, t+.06);
+    o.connect(og).connect(ac.destination); o.start(t); o.stop(t+.07);
+  }catch(e){}
+}
+const BW_WORDS = ['뽁!', '뽁!', '뽁!', '뽁', '톡!', '뿅'];
 function startWrap(){
   toggleStress(false);
   if(stage.querySelector('.bubblewrap')) return;
+  const ROWS = 4, COLS = 8, TOTAL = ROWS*COLS;
   const box = document.createElement('div'); box.className = 'bubblewrap'; box.setAttribute('role', 'dialog'); box.setAttribute('aria-label', '뽁뽁이');
-  box.innerHTML = '<button type="button" class="bw-close" aria-label="뽁뽁이 닫기">닫기</button>' + Array.from({length:32}, (_, i) => `<button type="button" class="bub" aria-label="뽁 ${i+1}"></button>`).join('');
-  let left = 32;
+  const fill = () => {
+    box.innerHTML = '<button type="button" class="bw-close" aria-label="뽁뽁이 닫기">닫기</button><p class="bw-top"><span class="bw-n">뽁뽁이 0/' + TOTAL + '</span><span class="bw-bar"><i></i></span></p>' +
+      Array.from({length:ROWS}, (_, r) => '<div class="bw-row">' + Array.from({length:COLS}, (_, c) => `<button type="button" class="bub" aria-label="뽁 ${r*COLS+c+1}"></button>`).join('') + '</div>').join('');
+    box.classList.remove('done'); left = TOTAL;
+  };
+  let left = TOTAL, down = false;
+  const pop = (b) => {
+    if(!b || b.classList.contains('popped') || box.classList.contains('done')) return;
+    b.classList.add('popped'); popSound(); haptic(20); left--;
+    const n = box.querySelector('.bw-n'); if(n) n.textContent = `뽁뽁이 ${TOTAL-left}/${TOTAL}`;
+    const bar = box.querySelector('.bw-bar i'); if(bar) bar.style.width = ((TOTAL-left)/TOTAL*100) + '%';
+    if(!reduce){
+      const br = b.getBoundingClientRect(), sr = box.getBoundingClientRect(), cx = br.left - sr.left + br.width/2, cy = br.top - sr.top + br.height/2;
+      const t = document.createElement('p'); t.className = 'bw-txt'; t.textContent = BW_WORDS[(Math.random()*BW_WORDS.length)|0]; t.style.left = cx+'px'; t.style.top = cy+'px'; box.appendChild(t); setTimeout(() => t.remove(), 650);
+      for(let k=0;k<5;k++){ const q = document.createElement('i'); q.className = 'bw-bit'; const a = Math.random()*Math.PI*2, v = 10 + Math.random()*12;
+        q.style.left = cx+'px'; q.style.top = cy+'px'; q.style.setProperty('--dx', Math.cos(a)*v+'px'); q.style.setProperty('--dy', Math.sin(a)*v+'px'); box.appendChild(q); setTimeout(() => q.remove(), 450); }
+    }
+    if(left === 0) finish();
+  };
+  const finish = () => {
+    sfx('coin'); haptic([60,60,60,60,200]); box.classList.add('done');
+    box.insertAdjacentHTML('beforeend', '<p class="bw-msg"><span>스트레스 -100!</span><b>개운해요</b></p><button type="button" class="bw-again">한 장 더</button>'); say(player, '아 개운해', 2400);
+    if(!reduce) for(let f=0; f<6; f++) setTimeout(() => { const fx = 40 + Math.random()*(W-80), fy = 40 + Math.random()*90; sfx('pop');
+      for(let k=0;k<18;k++){ const a = k/18*Math.PI*2, v = 1.2 + Math.random()*1.2; parts.push({x:fx, y:fy, vx:Math.cos(a)*v, vy:Math.sin(a)*v - .4, life:34, kind: k%3 ? 'star' : 'heart'}); } }, f*220);
+  };
   box.addEventListener('pointerdown', e => {
     if(e.target.closest('.bw-close')){ box.remove(); return; }
-    const b = e.target.closest('.bub'); if(!b || b.classList.contains('popped')) return;
-    e.preventDefault(); b.classList.add('popped'); sfx('pop'); haptic(25); left--;
-    if(left === 0){ sfx('coin'); haptic([60,60,60,60,200]); box.classList.add('done'); box.insertAdjacentHTML('beforeend', '<p class="bw-msg"><span>스트레스 -100!</span><b>개운해요</b></p>'); say(player, '아 개운해', 2400);
-      if(!reduce) for(let f=0; f<6; f++) setTimeout(() => { const fx = 40 + Math.random()*(W-80), fy = 40 + Math.random()*90; sfx('pop');
-        for(let k=0;k<18;k++){ const a = k/18*Math.PI*2, v = 1.2 + Math.random()*1.2; parts.push({x:fx, y:fy, vx:Math.cos(a)*v, vy:Math.sin(a)*v - .4, life:34, kind: k%3 ? 'star' : 'heart'}); } }, f*220);
-      setTimeout(() => box.remove(), 2600); }
+    if(e.target.closest('.bw-again')){ fill(); return; }
+    const b = e.target.closest('.bub'); if(!b) return;
+    e.preventDefault(); down = true; try{ box.releasePointerCapture(e.pointerId); }catch(_){}
+    pop(b);
   });
+  box.addEventListener('pointermove', e => { if(!down) return; const el = document.elementFromPoint(e.clientX, e.clientY); pop(el && el.closest && el.closest('.bub')); });
+  const up = () => { down = false; };
+  box.addEventListener('pointerup', up); box.addEventListener('pointercancel', up); box.addEventListener('pointerleave', up);
+  fill();
   stage.appendChild(box);
 }
 document.getElementById('st-scream').addEventListener('click', startScream);
