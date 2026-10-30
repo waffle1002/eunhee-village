@@ -83,6 +83,7 @@ body::after{content:""; position:fixed; inset:0; z-index:-1; pointer-events:none
 .bw-close{position:absolute; top:4px; right:6px; z-index:2; font-family:var(--font-display); font-size:13px; background:#fff; color:var(--frame); border:2px solid var(--frame); border-radius:3px; padding:0 6px; cursor:pointer}
 .bubblewrap.done .bub{opacity:0; transition:opacity .3s}
 .bubblewrap.done{background:#1A104033; backdrop-filter:none}
+#fun-big.long{font-size:18px; line-height:1.6; word-break:keep-all; color:var(--ink)}
 .bw-msg{position:absolute; inset:0; margin:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; pointer-events:none; font-family:var(--font-display); animation:bwPop .5s steps(5) both}
 .bw-msg span{font-size:clamp(22px,5.4vw,40px); letter-spacing:.02em; color:#FFE45D; text-shadow:3px 0 0 #3A2617, -3px 0 0 #3A2617, 0 3px 0 #3A2617, 0 -3px 0 #3A2617, 3px 3px 0 #3A2617, 5px 5px 0 #E0566A; animation:bwRainbow .6s steps(1) infinite}
 .bw-msg b{font-weight:400; font-size:clamp(14px,3vw,20px); color:#fff; background:#E0566A; border:3px solid #3A2617; padding:0 10px; box-shadow:3px 3px 0 #3A2617}
@@ -941,13 +942,26 @@ const FORTUNES = [
   '보고서가 한 번에 통과되는 기적의 날'
 ];
 /* 오늘의 운세: 하루에 하나, 날짜마다 바뀌어요 */
-const DAY_LUCK = ['메일 답장이 술술 써지는 날이에요','오늘 한 말 한마디가 칭찬으로 돌아와요','미뤄둔 일 하나를 시원하게 끝내요','엘리베이터가 딱 맞춰 열리는 하루','회의 시간이 예정보다 짧아져요','생각지 못한 간식이 책상에 도착해요','오늘의 아이디어가 내일의 보고서가 돼요','퇴근길 노을이 유난히 예쁠 거예요','동료와 웃을 일이 하나 생겨요','작은 실수도 귀엽게 넘어가는 날','점심 줄이 유난히 짧아요','오후에 좋은 소식 한 통이 와요'];
+const DAY_LUCK = [
+  '오후 세 시, 당신은 문득 깨닫는다. 오늘은 아직 아무도 당신을 찾지 않았다는 것을. 그것은 축복이었다',
+  '회의실의 시계는 오늘따라 성실했다. 예정보다 십 분 일찍, 해방은 그렇게 조용히 찾아왔다',
+  '메일함을 여는 손끝이 떨렸다. 그러나 그곳엔 광고 메일 두 통뿐이었다. 평화란 그런 얼굴을 하고 있었다',
+  '엘리베이터 문이 당신 앞에서 기다렸다는 듯 열렸다. 세상이 오늘 하루쯤은 당신 편이기로 한 모양이었다',
+  '점심 줄은 이상하리만치 짧았다. 당신은 그것을 운명이라 불렀고, 제육은 말이 없었다',
+  '누군가 말없이 책상 위에 과자 하나를 두고 갔다. 범인은 끝내 밝혀지지 않았다. 밝힐 필요도 없었다',
+  '6시 정각, 노트북이 닫히는 소리는 그 어떤 교향곡보다 아름다웠다. 오늘이 바로 그날이다',
+  '팀장님의 표정은 맑음이었다. 결재 서류는 한 번에 통과했고, 당신은 잠시 신을 믿어 보기로 했다',
+  '오후의 졸음이 문을 두드렸다. 당신은 커피 한 잔으로 그것을 돌려보냈다. 오늘의 승자는 당신이다',
+  '스치듯 떠오른 생각을 메모해 둘 것. 그것은 내일 회의에서 당신을 구원할 문장이 된다',
+  '퇴근길 지하철, 눈앞의 빈자리는 신기루가 아니었다. 당신은 앉았고, 세상은 조금 너그러워졌다',
+  '월급날은 아직 멀었다. 그러나 오늘의 당신은 그 사실을 잊을 만큼 꽤 괜찮은 하루를 보낸다'
+];
 const DAY_ITEM = ['노란 포스트잇','따뜻한 라떼','줄무늬 양말','파란 볼펜','초코 과자','이어폰','텀블러','손거울','민트 사탕','귀여운 스티커'];
 document.getElementById('d-fortune').addEventListener('click', () => {
   let me2 = ''; try{ me2 = localStorage.getItem('village-fid') || ''; if(!me2){ me2 = Math.random().toString(36).slice(2); localStorage.setItem('village-fid', me2); } }catch(e){}
   const r = seeded('luck' + todayKey() + me2), star = 3 + ((r() * 3) | 0);
-  sfx('coin'); say(player, '바삭! 쿠키를 깨 봤어요', 1600);
-  openFun('오늘의 운세', '포춘쿠키 속 쪽지를 펼쳐 보니...', DAY_LUCK[(r() * DAY_LUCK.length) | 0], `행운 지수 ${star*20}점, 행운템은 ${DAY_ITEM[(r() * DAY_ITEM.length) | 0]}`);
+  sfx('coin'); say(player, '바삭...', 1400);
+  openFun('오늘의 운세', '바삭, 쿠키가 갈라지자 접힌 쪽지 한 장이 모습을 드러냈다', DAY_LUCK[(r() * DAY_LUCK.length) | 0], `행운의 물건은 ${DAY_ITEM[(r() * DAY_ITEM.length) | 0]}. 오늘 운의 온도는 ${star*20}도, 칼퇴하기 좋은 온도다`);
 });
 function drawCoffees(c){
   coffees.forEach((cf, i) => {
@@ -1021,7 +1035,7 @@ function openFun(bar, sub, big, tail){
   const p = document.getElementById('funpop'); if(!p) return;
   p.querySelector('.pop-bar span').textContent = bar;
   document.getElementById('fun-sub').textContent = sub;
-  document.getElementById('fun-big').textContent = big;
+  const fb = document.getElementById('fun-big'); fb.textContent = big; fb.classList.toggle('long', big.length > 22);
   document.getElementById('fun-tail').textContent = tail;
   p.hidden = false; document.getElementById('fun-ok').focus({preventScroll:true});
 }
