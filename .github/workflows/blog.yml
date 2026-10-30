@@ -1,0 +1,26 @@
+name: 블로그 새 글 가져오기
+
+on:
+  schedule:
+    - cron: '0 21 * * *'   # 매일 아침 6시(한국 시간)
+  workflow_dispatch:        # Actions 탭에서 'Run workflow'로 바로 돌릴 수도 있어요
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install pillow
+      - run: python3 scripts/update_blog.py
+      - name: 바뀐 게 있으면 커밋
+        run: |
+          git config user.name "eunhee-village-bot"
+          git config user.email "eunhee-village-bot@users.noreply.github.com"
+          git add blog-feed.json thumbs
+          git diff --cached --quiet || (git commit -m "블로그 새 글 자동 갱신" && git push)
