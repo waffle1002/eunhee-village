@@ -49,7 +49,7 @@
       ".read": true,
       "$uid": {
         ".write": "auth != null && auth.uid === $uid",
-        ".validate": "newData.child('day').isString() && newData.child('day').val().length <= 12"
+        ".validate": "newData.child('day').isString() && newData.child('day').val().length <= 12 && (!newData.child('n').exists() || (newData.child('n').isNumber() && (newData.child('n').val() <= 2 || (data.child('n').exists() && newData.child('n').val() <= data.child('n').val() + 1))))"
       }
     },
     "applies": {
