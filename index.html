@@ -596,9 +596,15 @@ body, .dialog, .memo ul, .memo li, .askpop, .pop, .ask p, .foot, .fun-big, #fun-
 .qcard b{font-size:13px} .qgo{font-size:11px; padding:1px 6px}
 .mini-toast{position:fixed; left:50%; top:calc(14px + env(safe-area-inset-top,0px)); transform:translateX(-50%); z-index:60; margin:0; max-width:min(92vw,360px); font-family:var(--font-game); font-size:12px; line-height:1.5; color:#fff; background:#2C3B6B; border:2px solid #fff; outline:2px solid #2C3B6B; border-radius:3px; padding:6px 10px; box-shadow:0 4px 0 #1A2244; text-align:center; animation:toastIn 3.6s steps(4) both}
 @keyframes toastIn{0%{transform:translate(-50%,-30px); opacity:0} 8%{transform:translate(-50%,0); opacity:1} 90%{opacity:1} 100%{opacity:0}}
+.bubble{font-family:var(--font-display)}
 .hello-say{white-space:nowrap; min-width:0; overflow:hidden}
 @media (max-width:560px){.toolbar{flex-wrap:nowrap} .toolbar .tb{white-space:nowrap; flex:none}}
 @media (max-width:430px){.tb-long2{display:none}}
+.win-big{position:absolute; inset:0; z-index:30; display:grid; place-items:center; pointer-events:none; background:#1A104033}
+.win-big p{margin:0; display:flex; flex-direction:column; align-items:center; gap:6px; font-family:var(--font-display); animation:bwPop .5s steps(5) both}
+.win-big span{font-size:clamp(22px,5.4vw,40px); color:#FFE45D; text-shadow:3px 0 0 #3A2617,-3px 0 0 #3A2617,0 3px 0 #3A2617,0 -3px 0 #3A2617,3px 3px 0 #3A2617,5px 5px 0 #E0566A; animation:bwRainbow .6s steps(1) infinite; white-space:nowrap}
+.win-big b{font-weight:400; font-size:clamp(14px,3vw,20px); color:#fff; background:#E0566A; border:3px solid #3A2617; padding:0 10px; box-shadow:3px 3px 0 #3A2617}
+@media (prefers-reduced-motion: reduce){.win-big p, .win-big span{animation:none}}
 </style>
 </head>
 <body>
@@ -1953,6 +1959,14 @@ function askQuest(i){
   document.getElementById('qa-no').textContent = done ? '아니요..' : '다음 기회에..';
   ap.hidden = false; ap.dataset.q = i; document.getElementById('qa-yes').focus({preventScroll:true});
 }
+function winBanner(){
+  stage.querySelector('.win-big')?.remove();
+  stage.insertAdjacentHTML('beforeend', '<div class="win-big" aria-live="polite"><p><span>선착순 1명 당첨!</span><b>축하해요</b></p></div>');
+  stage.scrollIntoView({behavior: reduce?'auto':'smooth', block:'center'});
+  if(soundOn) try{ ac = ac || new AudioContext(); [523,659,784,1047,784,1047].forEach((f,i) => { const o = ac.createOscillator(), g = ac.createGain(), t = ac.currentTime + i*.1; o.type = 'square'; o.frequency.value = f; g.gain.setValueAtTime(.05, t); g.gain.exponentialRampToValueAtTime(.001, t + .18); o.connect(g).connect(ac.destination); o.start(t); o.stop(t + .2); }); }catch(e){}
+  if(!reduce) for(let f=0; f<5; f++) setTimeout(() => { const fx = 40 + Math.random()*(W-80), fy = 30 + Math.random()*80;
+    for(let k=0;k<18;k++){ const a = k/18*Math.PI*2, v = 1.2 + Math.random()*1.2; parts.push({x:fx, y:fy, vx:Math.cos(a)*v, vy:Math.sin(a)*v - .4, life:34, kind: k%3 ? 'star' : 'heart'}); } }, f*200);
+}
 function closeAsk(){ document.getElementById('askpop').hidden = true; }
 function applyCount(i){ let n = 0; for(const d of applyDocs.values()) if((d.list||[]).some(x => x.q === i)) n++; return n; }
 function myApplied(i){ const d = applyDocs.get(myKey()); return !!(d && (d.list||[]).some(x => x.q === i)); }
@@ -1978,9 +1992,10 @@ document.getElementById('qa-yes').addEventListener('click', () => {
   if(cancel){ saveApply(i, false); sfx('boop'); say(player, '신청 취소했어요', 1600); return; }
   saveApply(i, true); sfx('coin'); haptic([40,40,80]);
   say(player, '신청 완료!', 2000);
-  miniToast('신청했어요! 방명록에 주인장에게만으로 연락처 남겨 주세요');
+  winBanner();
+  setTimeout(() => miniToast('방명록에 주인장에게만으로 연락처 남겨 주세요'), 1800);
   prefill = `[${OFFERS[i].t}] 같이 놀아요! 연락처: `; gbSecretNext = true;
-  setTimeout(() => { goTo('mail'); document.getElementById('dialog').scrollIntoView({behavior: reduce?'auto':'smooth', block:'nearest'}); }, 700);
+  setTimeout(() => { stage.querySelector('.win-big')?.remove(); goTo('mail'); document.getElementById('dialog').scrollIntoView({behavior: reduce?'auto':'smooth', block:'nearest'}); }, 2400);
   if(!reduce) for(let k=0;k<10;k++) parts.push({x:player.x, y:player.y-14, vx:(Math.random()-.5)*2, vy:-.5-Math.random()*1.2, life:28, kind:'heart'});
 });
 document.getElementById('qa-no').addEventListener('click', () => { const c = document.getElementById('askpop').dataset.mode === 'cancel'; closeAsk(); say(player, c ? '계속 같이 해요' : '다음에 같이 해요', 1600); });
