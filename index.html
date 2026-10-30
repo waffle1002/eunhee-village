@@ -1204,9 +1204,8 @@ function hudAsk(q, yes, no, onYes){
 document.getElementById('hud-yes').addEventListener('click', e => { e.stopPropagation(); document.getElementById('hud-ask').hidden = true; const f = hudYes; hudYes = null; f && f(); });
 document.getElementById('hud-no').addEventListener('click', e => { e.stopPropagation(); document.getElementById('hud-ask').hidden = true; hudYes = null; });
 document.addEventListener('click', e => {
-  const b = e.target.closest('#hud-eye, #hud-coffee, #hud-chi, #hud-mail'); if(!b) return;
-  if(b.id === 'hud-eye') hudAsk(`오늘 ${todayVisitors()}명이 놀러 왔어요! 지금까지 다녀간 손님은 ${Math.max(totalVisitors(), todayVisitors())}명`, '좋아요', null);
-  else if(b.id === 'hud-coffee') hudAsk(coffeeGot.length >= COFFEE_N ? '오늘 커피 다 모았어요! 내일 또 새로 숨겨 둘게요' : `길에 숨은 커피 ${COFFEE_N}잔을 다 모으면 칼퇴 운세! 오늘 ${coffeeGot.length}/${COFFEE_N}`, '알겠어요', null);
+  const b = e.target.closest('#hud-coffee, #hud-chi, #hud-mail'); if(!b) return;
+  if(b.id === 'hud-coffee') hudAsk(coffeeGot.length >= COFFEE_N ? '오늘 커피 다 모았어요! 내일 또 새로 숨겨 둘게요' : `길에 숨은 커피 ${COFFEE_N}잔을 다 모으면 칼퇴 운세! 오늘 ${coffeeGot.length}/${COFFEE_N}`, '알겠어요', null);
   else if(b.id === 'hud-chi') hudAsk(chiFound ? '치이카와를 찾았어요! 은희의 최애 캐릭터예요' : '사진관 근처 어딘가에 치이카와가 숨어 있어요. 찾아볼래요?', chiFound ? '좋아요' : '찾아볼게요', null);
   else hudAsk('편지 쓰고 갈래요?', '응!', '다음에', () => { goTo('mail'); document.getElementById('dialog').scrollIntoView({behavior: reduce?'auto':'smooth', block:'nearest'}); });
 });
@@ -1901,7 +1900,8 @@ try{ const s = JSON.parse(localStorage.getItem('village-me') || 'null'); if(s &&
 const HOST_DEFAULT = {name:'은희', look:{acc:'flower', expr:'basic', hair:'#3A2617', hairStyle:'long', pants:'#E0566A', shirt:'#FFFFFF', skin:'#F6D2B0'}};
 const villagers = new Map();   // uid -> {name, look}
 const guestDocs = new Map();   // uid -> {name, look, posts, likes}
-const visitDocs = new Map();   // uid -> {day}  오늘 방문자 세기
+const visitDocs = new Map();   // uid -> {day, n}  방문자 세기 (n = 그 사람이 온 날 수)
+let visitSaved = false;
 const applyDocs = new Map();   // uid -> {name, look, list:[{q, t, at}]}  함께해요 신청 (주인장만 봄)
 const secretDocs = new Map();  // uid -> {name, look, posts}  주인장에게만 보낸 편지
 const peerChars = new Map();   // room peer -> character
@@ -1953,7 +1953,7 @@ function setFavicon(){ let l = document.querySelector('link[rel=icon]'); if(!l){
 function updateOnline(){
   const nRes = villagers.size + (me && !(uid && villagers.has(uid)) ? 1 : 0);
   renderWho();
-  onlineEl.innerHTML = `<button type="button" class="hud-btn" id="who-btn" aria-expanded="${!document.getElementById('who').hidden && whoMode==='all'}" aria-controls="who" aria-label="주민 ${nRes}명, 눌러서 목록 보기" title="주민">${pixIcon('face')}<b>${nRes}</b></button><button type="button" class="hud-btn" id="hud-eye" title="오늘 방문자" aria-label="오늘 방문자 ${todayVisitors()}명, 눌러서 보기">${pixIcon('eye')}<b>${todayVisitors()}</b></button><button type="button" class="hud-btn" id="hud-coffee" title="오늘 주운 커피" aria-label="오늘 커피 ${coffeeGot.length}잔, 눌러서 설명 보기">${pixIcon('coffee')}<b>${coffeeGot.length}/${COFFEE_N}</b></button><button type="button" class="hud-btn" id="hud-chi" title="숨은 치이카와" aria-label="숨은 치이카와 ${chiFound?'찾음':'아직 못 찾음'}, 눌러서 설명 보기">${pixIcon('chi')}<b>${chiFound?1:0}<i class="hud-of">/1</i></b></button><button type="button" class="hud-btn" id="hud-mail" title="편지" aria-label="편지 ${allPosts().length}통, 눌러서 편지 쓰기">${pixIcon('mail')}<b>${allPosts().length}</b></button><button type="button" class="hud-btn" id="live-btn" aria-expanded="${!document.getElementById('who').hidden && whoMode==='live'}" aria-controls="who" title="지금 접속" aria-label="지금 ${room ? peerChars.size+1 : 1}명 접속 중, 눌러서 보기"><i class="live-dot" aria-hidden="true"></i><b>${room ? peerChars.size+1 : 1}</b></button>`;
+  onlineEl.innerHTML = `<button type="button" class="hud-btn" id="who-btn" aria-expanded="${!document.getElementById('who').hidden && whoMode==='all'}" aria-controls="who" aria-label="주민 ${nRes}명, 눌러서 목록 보기" title="주민">${pixIcon('face')}<b>${nRes}</b></button><span title="누적 방문자" aria-label="누적 방문자 ${totalVisitors()}명">${pixIcon('eye')}<b>${totalVisitors()}</b></span><button type="button" class="hud-btn" id="hud-coffee" title="오늘 주운 커피" aria-label="오늘 커피 ${coffeeGot.length}잔, 눌러서 설명 보기">${pixIcon('coffee')}<b>${coffeeGot.length}/${COFFEE_N}</b></button><button type="button" class="hud-btn" id="hud-chi" title="숨은 치이카와" aria-label="숨은 치이카와 ${chiFound?'찾음':'아직 못 찾음'}, 눌러서 설명 보기">${pixIcon('chi')}<b>${chiFound?1:0}<i class="hud-of">/1</i></b></button><button type="button" class="hud-btn" id="hud-mail" title="편지" aria-label="편지 ${allPosts().length}통, 눌러서 편지 쓰기">${pixIcon('mail')}<b>${allPosts().length}</b></button><button type="button" class="hud-btn" id="live-btn" aria-expanded="${!document.getElementById('who').hidden && whoMode==='live'}" aria-controls="who" title="지금 접속" aria-label="지금 ${room ? peerChars.size+1 : 1}명 접속 중, 눌러서 보기"><i class="live-dot" aria-hidden="true"></i><b>${room ? peerChars.size+1 : 1}</b></button>`;
 }
 function onPeers(change){
   const seen = new Set(), seenBy = new Set(), myAuth = isOwner ? ownerUid : uid;
@@ -2273,8 +2273,7 @@ function renderMiniGuest(){
   const tops = allPosts().filter(p=>!p.re).sort((a,b)=>b.at-a.at).slice(0,3);
   ul.innerHTML = tops.length ? tops.map(p=>`<li><img src="${avatar(p.look)}" alt=""><b>${esc(p.name)}</b><em>${esc(p.text)}</em></li>`).join('') : `<li class="gbmini-empty">아직 편지가 없어요. 첫 편지를 남겨 줘요!</li>`;
 }
-function totalVisitors(){ return db ? visitDocs.size : 1; }
-function todayVisitors(){ const t = todayKey(); let n = 0; for(const v of visitDocs.values()) if(v && v.day === t) n++; if(!db) n = Math.max(n, 1); return n; }
+function totalVisitors(){ if(!db) return 1; let n = 0; for(const v of visitDocs.values()) n += Math.max(1, Math.min(9999, +(v && v.n) || 1)); return n; }   // 한 사람이 다른 날 또 오면 또 세요
 let whoMode = 'all';
 function renderWho(){
   const box = document.getElementById('who'); if(!box || box.hidden) return;
@@ -2344,9 +2343,10 @@ function refreshPanels(){ if(current==='mail') renderGuestList(); renderMiniGues
     }, () => {});
     db.collection('visits').onSnapshot(snap => {
       visitDocs.clear(); for(const d of snap.docs){ const v = d.data(); if(v) visitDocs.set(d.id, v); }
+      if(!visitSaved && uid && !isOwner){ visitSaved = true; const old = visitDocs.get(uid), t = todayKey();
+        if(!old || old.day !== t) db.doc('visits/'+uid).set({day:t, at:Date.now(), n:(old ? (+old.n || 1) : 0) + 1}).catch(()=>{}); }
       updateOnline();
     }, () => {});
-    if(uid && !isOwner) db.doc('visits/'+uid).set({day: todayKey(), at: Date.now()}).catch(()=>{});
     db.collection('applies').onSnapshot(snap => {
       applyDocs.clear(); for(const d of snap.docs){ const v = d.data(); if(v) applyDocs.set(d.id, v); }
       if(current==='board') show('board'); updateApplyBadge();
