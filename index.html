@@ -81,7 +81,14 @@ body::after{content:""; position:fixed; inset:0; z-index:-1; pointer-events:none
 .bub{border:2px solid #FFFFFFCC; border-radius:50%; background:radial-gradient(circle at 32% 30%, #fff 0 18%, #EAF4FFcc 22% 60%, #BFD6F2aa 100%); cursor:pointer; padding:0; aspect-ratio:1; align-self:center; justify-self:center; width:100%; max-width:56px; touch-action:manipulation}
 .bub.popped{background:#BFD6F244; border-style:dashed; border-color:#ffffff88; transform:scale(.86); cursor:default}
 .bw-close{position:absolute; top:4px; right:6px; z-index:2; font-family:var(--font-display); font-size:13px; background:#fff; color:var(--frame); border:2px solid var(--frame); border-radius:3px; padding:0 6px; cursor:pointer}
-.bw-msg{position:absolute; inset:0; display:grid; place-items:center; font-family:var(--font-display); font-size:clamp(18px,4vw,30px); color:var(--frame); text-shadow:2px 2px 0 #fff; pointer-events:none}
+.bubblewrap.done .bub{opacity:0; transition:opacity .3s}
+.bubblewrap.done{background:#1A104033; backdrop-filter:none}
+.bw-msg{position:absolute; inset:0; margin:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; pointer-events:none; font-family:var(--font-display); animation:bwPop .5s steps(5) both}
+.bw-msg span{font-size:clamp(22px,5.4vw,40px); letter-spacing:.02em; color:#FFE45D; text-shadow:3px 0 0 #3A2617, -3px 0 0 #3A2617, 0 3px 0 #3A2617, 0 -3px 0 #3A2617, 3px 3px 0 #3A2617, 5px 5px 0 #E0566A; animation:bwRainbow .6s steps(1) infinite}
+.bw-msg b{font-weight:400; font-size:clamp(14px,3vw,20px); color:#fff; background:#E0566A; border:3px solid #3A2617; padding:0 10px; box-shadow:3px 3px 0 #3A2617}
+@keyframes bwPop{0%{transform:scale(.2)} 60%{transform:scale(1.25)} 100%{transform:scale(1)}}
+@keyframes bwRainbow{0%{color:#FFE45D} 25%{color:#5DD5FF} 50%{color:#FF5DA2} 75%{color:#8CFF5D}}
+@media (prefers-reduced-motion: reduce){.bw-msg, .bw-msg span{animation:none}}
 @media (prefers-reduced-motion: reduce){.stage.shake{animation:none}}
 
 .tb{font-family:var(--font-display); font-size:14px; background:#E8ECF8; color:var(--frame); border:2px solid #C9D3F2; padding:2px 10px; cursor:pointer; border-radius:2px}
@@ -1389,6 +1396,14 @@ document.querySelector('[data-open-me]').addEventListener('click', () => show('m
 function goHome(){ document.getElementById('ask').hidden = true; show('welcome'); document.querySelector('.win')?.scrollIntoView({behavior: reduce?'auto':'smooth', block:'start'}); say(player, '홈으로!', 1000); }
 const tbHome = document.getElementById('tb-home'); tbHome.innerHTML = pixIcon('house'); paintSound();
 
+/* 진동: 안드로이드는 vibrate, 아이폰(iOS 18 이상)은 스위치 체크박스 햅틱 */
+const hapticSw = (() => { const l = document.createElement('label'); l.setAttribute('aria-hidden','true'); l.style.cssText = 'position:fixed;left:-99px;top:0;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none';
+  l.innerHTML = '<input type="checkbox" switch tabindex="-1">'; document.body.appendChild(l); return l; })();
+function haptic(pattern){
+  if(navigator.vibrate){ try{ if(navigator.vibrate(pattern)) return; }catch(e){} }
+  const arr = Array.isArray(pattern) ? pattern : [pattern]; let t = 0;
+  arr.forEach((ms, i) => { if(i % 2 === 0){ const n = Math.max(1, Math.round(ms / 60)); for(let k=0;k<n;k++) setTimeout(() => hapticSw.click(), t + k*60); } t += ms; });
+}
 /* 스트레스 풀기: 으아아아, 뽁뽁이 */
 const SCREAM_REACT = ['깜짝이야!','무슨 일이야?','나도 으아아','부장님 오셨어?','괜찮아 괜찮아','속 시원하다'];
 const stressBtn = document.getElementById('tb-stress'), stressMenu = document.getElementById('stress-menu');
@@ -1400,7 +1415,7 @@ stressBtn.addEventListener('click', e => { e.stopPropagation(); toggleStress(str
 document.addEventListener('click', e => { if(!stressMenu.hidden && !e.target.closest('#stress-menu')) toggleStress(false); });
 function startScream(){
   toggleStress(false);
-  say(player, '으아아아아아!!', 2200); player.hop = 10; sfx('scream');
+  say(player, '으아아아아아!!', 2200); player.hop = 10; sfx('scream'); haptic([90,40,90,40,90,40,120,60,220]);
   stage.classList.remove('shake'); void stage.offsetWidth; stage.classList.add('shake');
   setTimeout(() => stage.classList.remove('shake'), 800);
   others().forEach((c, i) => { c.hop = 8; setTimeout(() => say(c, SCREAM_REACT[(Math.random()*SCREAM_REACT.length)|0], 1600), 300 + i*120); });
@@ -1415,8 +1430,11 @@ function startWrap(){
   box.addEventListener('pointerdown', e => {
     if(e.target.closest('.bw-close')){ box.remove(); return; }
     const b = e.target.closest('.bub'); if(!b || b.classList.contains('popped')) return;
-    e.preventDefault(); b.classList.add('popped'); sfx('pop'); left--;
-    if(left === 0){ sfx('coin'); box.insertAdjacentHTML('beforeend', '<p class="bw-msg">스트레스 -100! 개운해요</p>'); say(player, '아 개운해', 2000); setTimeout(() => box.remove(), 1600); }
+    e.preventDefault(); b.classList.add('popped'); sfx('pop'); haptic(25); left--;
+    if(left === 0){ sfx('coin'); haptic([60,60,60,60,200]); box.classList.add('done'); box.insertAdjacentHTML('beforeend', '<p class="bw-msg"><span>스트레스 -100!</span><b>개운해요</b></p>'); say(player, '아 개운해', 2400);
+      if(!reduce) for(let f=0; f<6; f++) setTimeout(() => { const fx = 40 + Math.random()*(W-80), fy = 40 + Math.random()*90; sfx('pop');
+        for(let k=0;k<18;k++){ const a = k/18*Math.PI*2, v = 1.2 + Math.random()*1.2; parts.push({x:fx, y:fy, vx:Math.cos(a)*v, vy:Math.sin(a)*v - .4, life:34, kind: k%3 ? 'star' : 'heart'}); } }, f*220);
+      setTimeout(() => box.remove(), 2600); }
   });
   stage.appendChild(box);
 }
