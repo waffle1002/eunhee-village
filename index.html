@@ -352,6 +352,12 @@ input, textarea{-webkit-user-select:text !important; user-select:text !important
 .me{display:flex; gap:18px; align-items:center; margin-bottom:12px; flex-wrap:wrap}
 .me > div{flex:1; min-width:0}
 #me-cv{width:72px; height:108px; image-rendering:pixelated; background:var(--paper-2); border-radius:6px}
+.facts{list-style:none; margin:0; padding:0; display:grid; gap:6px}
+.facts li{display:flex; align-items:center; gap:10px; background:#fff; border:2px solid var(--paper-2); border-radius:6px; padding:5px 10px; min-width:0}
+.facts b{flex:none; width:3.2em; font-family:var(--font-display); font-weight:400; color:var(--wood); font-size:14px}
+.facts span{min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:15px}
+@media (max-width:560px){.me{gap:12px; flex-wrap:nowrap} #me-cv{width:52px; height:78px} .me h2{font-size:20px; margin-bottom:2px} .me .lead{font-size:14px; line-height:1.55} .facts span{font-size:14px}}
+
 .chip{font-family:var(--font-display); font-size:14px; background:#fff; color:var(--ink); border:2px solid var(--paper-2); border-radius:20px; padding:1px 12px; cursor:pointer}
 .chip[aria-pressed="true"]{background:var(--wood); color:var(--paper); border-color:var(--wood)}
 .chip-shelf{display:inline-flex; align-items:center; gap:5px; font-size:13px; padding:2px 10px 2px 7px; border-radius:6px}
@@ -1292,17 +1298,17 @@ const PANELS = {
       <canvas id="me-cv" width="12" height="20" aria-label="은희 캐릭터"></canvas>
       <div>
         <h2>은희를 소개합니다</h2>
-        <p class="lead lead-long">좋아하는 걸 기록하는 30대 직장인이에요. 코딩은 직접 안 하고, 말로 설명해서 AI와 함께 대시보드와 위젯을 만드는 바이브코더이기도 해요. 좋아서 하는 블로그, 라떼 블로그를 써요.</p>
+        <p class="lead lead-long">좋아하는 걸 기록하는 30대 직장인이에요. 말로 AI와 위젯을 만드는 바이브코더예요.</p>
       </div>
     </div>
-    <table><tbody>
-      <tr><td>최애 캐릭터</td><td>치이카와</td></tr>
-      <tr><td>좋아하는 책</td><td>위화 인생, 양귀자 모순, 어린왕자, 사랑의 기술</td></tr>
-      <tr><td>요즘 빠진 것</td><td>AI로 나만의 매니저·위젯 만들기, 독서모임</td></tr>
-      <tr><td>올해 한 일</td><td>5월에 네팔 히말라야 ABC 트레킹 완주</td></tr>
-    </tbody></table>`}),
+    <ul class="facts">
+      <li><b>최애</b><span>치이카와</span></li>
+      <li><b>책</b><span>인생, 모순, 어린왕자, 사랑의 기술</span></li>
+      <li><b>요즘</b><span>AI로 위젯 만들기, 독서모임</span></li>
+      <li><b>올해</b><span>히말라야 ABC 트레킹 완주</span></li>
+    </ul>`}),
   class: () => {
-    const shelves = [['ai','AI',SERIES.ai,'bot'],['himalaya','히말라야',SERIES.himalaya,'mtn'],['books','책',SERIES.books,'book'],['photodump','일상',SERIES.photodump,'camera']];
+    const shelves = [['himalaya','히말라야',SERIES.himalaya,'mtn'],['photodump','일상',SERIES.photodump,'camera'],['books','책',SERIES.books,'book'],['ai','AI',SERIES.ai,'bot']];
     const cur = shelves.find(x=>x[0]===libShelf) || shelves[0];
     return {who:'도서관', html:`
     <div class="lib-head"><h2>라떼 블로그</h2><a class="lib-all" href="https://blog.naver.com/waffle95" target="_blank" rel="noopener">전체 보기 ${pixIcon('arrow')}</a></div>
@@ -1346,7 +1352,7 @@ const PANELS = {
 function PANELS_MAIL(){ return {who:'우체통 방명록', html:`
     <div id="gb-form-wrap"></div>
     <div class="guest" id="guest"></div>`}; }
-let blogCat = '전체', libShelf = 'ai';
+let blogCat = '전체', libShelf = 'himalaya';
 const panel = document.getElementById('panel'), tag = document.getElementById('nametag');
 let current = 'welcome';
 function show(id){
