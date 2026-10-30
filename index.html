@@ -72,6 +72,18 @@ body::after{content:""; position:fixed; inset:0; z-index:-1; pointer-events:none
 @keyframes partyBtn{0%{background:#FF5DA2; color:#fff}50%{background:#5DD5FF; color:var(--frame)}}
 @media (prefers-reduced-motion: reduce){.tb-party.on{animation:none; background:#FF5DA2; color:#fff}}
 .tb-home svg, .tb-ico svg{width:16px; height:16px}
+.tb-stress{display:inline-flex; align-items:center; gap:4px}
+.tb-stress svg{width:15px; height:15px}
+.stress-menu{position:absolute; top:calc(100% - 6px); z-index:31; display:flex; gap:6px; background:#fff; border:3px solid var(--frame); border-radius:4px; box-shadow:0 8px 18px #2c3b6b44; padding:6px}
+.stage.shake{animation:stageShake .08s steps(2) 9}
+@keyframes stageShake{0%{transform:translate(-3px,1px)} 50%{transform:translate(3px,-2px)} 100%{transform:translate(-2px,2px)}}
+.bubblewrap{position:absolute; inset:0; z-index:15; background:#DDEBFF66; backdrop-filter:blur(1px); display:grid; grid-template-columns:repeat(8,1fr); grid-template-rows:repeat(4,1fr); gap:4%; padding:6% 5% 4%}
+.bub{border:2px solid #FFFFFFCC; border-radius:50%; background:radial-gradient(circle at 32% 30%, #fff 0 18%, #EAF4FFcc 22% 60%, #BFD6F2aa 100%); cursor:pointer; padding:0; aspect-ratio:1; align-self:center; justify-self:center; width:100%; max-width:56px; touch-action:manipulation}
+.bub.popped{background:#BFD6F244; border-style:dashed; border-color:#ffffff88; transform:scale(.86); cursor:default}
+.bw-close{position:absolute; top:4px; right:6px; z-index:2; font-family:var(--font-display); font-size:13px; background:#fff; color:var(--frame); border:2px solid var(--frame); border-radius:3px; padding:0 6px; cursor:pointer}
+.bw-msg{position:absolute; inset:0; display:grid; place-items:center; font-family:var(--font-display); font-size:clamp(18px,4vw,30px); color:var(--frame); text-shadow:2px 2px 0 #fff; pointer-events:none}
+@media (prefers-reduced-motion: reduce){.stage.shake{animation:none}}
+
 .tb{font-family:var(--font-display); font-size:14px; background:#E8ECF8; color:var(--frame); border:2px solid #C9D3F2; padding:2px 10px; cursor:pointer; border-radius:2px}
 .tb:hover{background:#fff}
 .tb[aria-pressed="true"]{background:var(--banana)}
@@ -495,7 +507,12 @@ button.item:hover{border-color:var(--berry)}
       <button class="tb tb-ico" id="tb-sound" type="button" aria-pressed="false" aria-label="효과음 켜기" title="효과음"></button>
       <button class="tb" id="tb-time" type="button" aria-pressed="false">노을<span class="tb-long"> 모드</span></button>
       <button class="tb tb-party" id="tb-party" type="button">파티<span class="tb-long"> 모드</span></button>
-      <button class="tb" id="tb-lunch" type="button">점심 뭐 먹지</button>
+      <button class="tb" id="tb-lunch" type="button">점심<span class="tb-long"> 뭐 먹지</span></button>
+      <button class="tb tb-stress" id="tb-stress" type="button" aria-expanded="false" aria-controls="stress-menu" aria-label="스트레스 풀기"><span class="tb-long">스트레스</span></button>
+      <div class="stress-menu" id="stress-menu" hidden role="menu" aria-label="스트레스 풀기">
+        <button class="tb" type="button" role="menuitem" id="st-scream">으아아아</button>
+        <button class="tb" type="button" role="menuitem" id="st-wrap">뽁뽁이</button>
+      </div>
     </div>
     <div class="stage" id="stage" tabindex="0" aria-label="마을. 방향키나 WASD로 걷고, 문 앞에서 Enter를 누르면 들어가요.">
       <canvas id="cv" width="384" height="224" aria-label="픽셀 마을 지도. 건물 간판을 누르면 들어갈 수 있어요."></canvas>
@@ -1027,6 +1044,8 @@ function drawParty(c){
 document.getElementById('tb-party').addEventListener('click', startParty);
 document.getElementById('tb-lunch').addEventListener('click', spinLunch);
 
+
+
 function frame(t){
   requestAnimationFrame(frame);
   if(t-last < 1000/30) return; last = t; tick++;
@@ -1073,7 +1092,7 @@ function frame(t){
 /* ---------- tiny sound ---------- */
 let soundOn=false, ac=null;
 function sfx(kind){ if(!soundOn) return; try{ ac = ac || new AudioContext(); const o=ac.createOscillator(), gn=ac.createGain(); o.type='square';
-  const notes = kind==='door' ? [660,880] : kind==='coin' ? [988,1319] : kind==='boop' ? [523,392] : [440];
+  const notes = kind==='door' ? [660,880] : kind==='coin' ? [988,1319] : kind==='boop' ? [523,392] : kind==='pop' ? [1400] : kind==='scream' ? [392,370,349,330,311,294] : [440];
   notes.forEach((f,i)=>o.frequency.setValueAtTime(f, ac.currentTime+i*.08)); gn.gain.setValueAtTime(.06,ac.currentTime); gn.gain.exponentialRampToValueAtTime(.001, ac.currentTime+.08*notes.length+.05);
   o.connect(gn).connect(ac.destination); o.start(); o.stop(ac.currentTime+.08*notes.length+.06);}catch(e){} }
 const tbSound = document.getElementById('tb-sound');
@@ -1190,6 +1209,7 @@ const PIX = {
   lock: ['..kkkk..','.k....k.','.k....k.','yyyyyyyy','yyykkyyy','yyykkyyy','yyyyyyyy','.yyyyyy.'],
   mtn:  ['........','...w....','..wwB...','..BBBB..','.BBBBBB.','.BBgBBBB','BgggBBBB','gggggggg'],
   bot:  ['...y....','...B....','.bbbbbb.','.bwbbwb.','.bbbbbb.','.bbrrbb.','..bbbb..','.B....B.'],
+  hog:  ['..d.d...','.ddddd..','dkdkddss','dddddsks','ddddsssk','dkddsss.','.dddss..','.s..s...'],
   arrow:['........','..d.....','..dd....','..ddd...','..ddd...','..dd....','..d.....','........'],
 };
 const PIXC = {r:'#E0566A',w:'#FFF3D3',b:'#3F7CAC',B:'#2C3B6B',k:'#3A2617',d:'#8B5A2B',p:'#F59CB0',P:'#E0566A',y:'#F2C94C',g:'#8FD18A',o:'#E07B39',s:'#F6D2B0'};
@@ -1365,6 +1385,39 @@ document.querySelectorAll('[data-open]').forEach(b => b.addEventListener('click'
 document.querySelector('[data-open-me]').addEventListener('click', () => show('me'));
 function goHome(){ document.getElementById('ask').hidden = true; show('welcome'); document.querySelector('.win')?.scrollIntoView({behavior: reduce?'auto':'smooth', block:'start'}); say(player, '홈으로!', 1000); }
 const tbHome = document.getElementById('tb-home'); tbHome.innerHTML = pixIcon('house'); paintSound();
+
+/* 스트레스 풀기: 으아아아, 뽁뽁이 */
+const SCREAM_REACT = ['깜짝이야!','무슨 일이야?','나도 으아아','부장님 오셨어?','괜찮아 괜찮아','속 시원하다'];
+const stressBtn = document.getElementById('tb-stress'), stressMenu = document.getElementById('stress-menu');
+stressBtn.insertAdjacentHTML('afterbegin', pixIcon('hog'));
+function toggleStress(open){ stressMenu.hidden = !open; stressBtn.setAttribute('aria-expanded', open);
+  if(open) stressMenu.style.left = Math.max(4, Math.min(stressBtn.offsetLeft, stressBtn.parentElement.clientWidth - stressMenu.offsetWidth - 4)) + 'px'; }
+stressBtn.addEventListener('click', e => { e.stopPropagation(); toggleStress(stressMenu.hidden); });
+document.addEventListener('click', e => { if(!stressMenu.hidden && !e.target.closest('#stress-menu')) toggleStress(false); });
+function startScream(){
+  toggleStress(false);
+  say(player, '으아아아아아!!', 2200); player.hop = 10; sfx('scream');
+  stage.classList.remove('shake'); void stage.offsetWidth; stage.classList.add('shake');
+  setTimeout(() => stage.classList.remove('shake'), 800);
+  others().forEach((c, i) => { c.hop = 8; setTimeout(() => say(c, SCREAM_REACT[(Math.random()*SCREAM_REACT.length)|0], 1600), 300 + i*120); });
+  if(!reduce) for(let k=0;k<14;k++) parts.push({x:player.x, y:player.y-14, vx:(Math.random()-.5)*3, vy:-.6-Math.random()*1.6, life:26, kind:'star'});
+}
+function startWrap(){
+  toggleStress(false);
+  if(stage.querySelector('.bubblewrap')) return;
+  const box = document.createElement('div'); box.className = 'bubblewrap'; box.setAttribute('role', 'dialog'); box.setAttribute('aria-label', '뽁뽁이');
+  box.innerHTML = '<button type="button" class="bw-close" aria-label="뽁뽁이 닫기">닫기</button>' + Array.from({length:32}, (_, i) => `<button type="button" class="bub" aria-label="뽁 ${i+1}"></button>`).join('');
+  let left = 32;
+  box.addEventListener('pointerdown', e => {
+    if(e.target.closest('.bw-close')){ box.remove(); return; }
+    const b = e.target.closest('.bub'); if(!b || b.classList.contains('popped')) return;
+    e.preventDefault(); b.classList.add('popped'); sfx('pop'); left--;
+    if(left === 0){ sfx('coin'); box.insertAdjacentHTML('beforeend', '<p class="bw-msg">스트레스 -100! 개운해요</p>'); say(player, '아 개운해', 2000); setTimeout(() => box.remove(), 1600); }
+  });
+  stage.appendChild(box);
+}
+document.getElementById('st-scream').addEventListener('click', startScream);
+document.getElementById('st-wrap').addEventListener('click', startWrap);
 tbHome.addEventListener('click', goHome);
 document.addEventListener('keydown', e => { if(e.key==='Home' && !e.target.closest?.('input,textarea')){ e.preventDefault(); goHome(); } });
 document.getElementById('tb-me')?.addEventListener('click', () => { show('me'); document.getElementById('dialog').scrollIntoView({behavior: reduce?'auto':'smooth', block:'nearest'}); });
