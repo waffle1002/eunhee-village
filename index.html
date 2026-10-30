@@ -562,6 +562,12 @@ button.item:hover{border-color:var(--berry)}
 @keyframes pop{from{transform:translateY(4px)} to{transform:none}}
 @media (prefers-reduced-motion:reduce){.typing{animation:none}}
 @media (max-width:560px){ .titlebar p{display:none} .hint{display:none} }
+/* v75: 패널 안 작은 글씨 전부 픽셀 글씨 */
+.dialog, .memo ul, .askpop, .pop, .ask p{font-family:var(--font-game); letter-spacing:0}
+.ask .qbtn{font-family:var(--font-game)}
+@media (max-width:560px){.ask{flex-wrap:wrap; justify-content:center; white-space:normal; width:max-content; max-width:92%; row-gap:6px} .ask p{flex-basis:100%; text-align:center}}
+.dialog{font-size:14px}
+.dialog .lead{font-size:13px}
 </style>
 </head>
 <body>
@@ -603,7 +609,7 @@ button.item:hover{border-color:var(--berry)}
     <div class="stage" id="stage" tabindex="0" aria-label="마을. 방향키나 WASD로 걷고, 문 앞에서 Enter를 누르면 들어가요.">
       <canvas id="cv" width="384" height="224" aria-label="픽셀 마을 지도. 건물 간판을 누르면 들어갈 수 있어요."></canvas>
       <div class="hint">CLICK ANYWHERE · WASD · ENTER</div>
-      <div class="ask" id="tour-ask" hidden role="dialog" aria-live="polite"><p id="tour-q"></p><button type="button" class="qbtn" id="tour-yes">구경할래요</button><button type="button" class="qbtn no" id="tour-no">다음 장소</button><button type="button" class="qbtn no" id="tour-end" aria-label="투어 그만하기">그만</button></div>
+      <div class="ask" id="tour-ask" hidden role="dialog" aria-live="polite"><p id="tour-q"></p><button type="button" class="qbtn" id="tour-yes">응!</button><button type="button" class="qbtn no" id="tour-no">다음 장소</button><button type="button" class="qbtn no" id="tour-end" aria-label="투어 그만하기">아니 알아서 할게!</button></div>
       <div class="ask" id="ask" hidden role="dialog" aria-live="polite"><p id="ask-q"></p><button type="button" class="qbtn" id="ask-yes">들어가기</button><button type="button" class="qbtn no" id="ask-no">아니요</button></div>
       <button type="button" class="join" id="join" hidden><img id="join-ava" alt="">처음 왔어요? <b>내 캐릭터로 입주하기</b></button>
 
