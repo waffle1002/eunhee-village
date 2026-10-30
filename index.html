@@ -410,6 +410,8 @@ input, textarea{-webkit-user-select:text !important; user-select:text !important
 .tb-hud svg{width:14px; height:14px}
 .tb-hud b{font-family:var(--font-pixel); font-size:12px}
 @media (max-width:560px){.toolbar{gap:3px; padding:0 5px 8px} .toolbar .tb{font-size:12.5px; padding:2px 5px} .tb-stress{gap:3px} .tb-stress svg{width:13px; height:13px} .toolbar .tb-home, .toolbar .tb-ico{min-width:26px; padding:2px 4px} .tb-long{display:none}}
+.tb-tour svg{display:none}
+@media (max-width:380px){.tb-tour svg{display:block; width:14px; height:14px} .tb-tour .tour-txt{display:none}}
 @media (max-width:370px){.toolbar{gap:2px; padding:0 4px 8px} .toolbar .tb{font-size:12px; padding:2px 4px}}
 .live-dot{display:inline-block; width:8px; height:8px; margin:0 2px; background:#3CCB7F; box-shadow:0 0 0 2px #3ccb7f44}
 .hello-ava{width:30px; height:50px; image-rendering:pixelated; flex:none}
@@ -504,12 +506,12 @@ button.item:hover{border-color:var(--berry)}
     </div>
     <div class="toolbar">
       <button class="tb tb-home" id="tb-home" type="button" aria-label="홈으로">홈</button>
-      <button class="tb" id="tb-tour" type="button"><span class="tb-long">마을 </span>한 바퀴</button>
+      <button class="tb tb-tour" id="tb-tour" type="button" aria-label="마을 한 바퀴"><span class="tour-txt"><span class="tb-long">마을 </span>한 바퀴</span></button>
       <button class="tb tb-ico" id="tb-sound" type="button" aria-pressed="false" aria-label="효과음 켜기" title="효과음"></button>
       <button class="tb" id="tb-time" type="button" aria-pressed="false">노을<span class="tb-long"> 모드</span></button>
       <button class="tb tb-party" id="tb-party" type="button">파티<span class="tb-long"> 모드</span></button>
       <button class="tb" id="tb-lunch" type="button">점심<span class="tb-long"> 뭐 먹지</span></button>
-      <button class="tb tb-stress" id="tb-stress" type="button" aria-expanded="false" aria-controls="stress-menu" aria-label="스트레스 풀기"><span>스트레스</span></button>
+      <button class="tb tb-stress" id="tb-stress" type="button" aria-expanded="false" aria-controls="stress-menu" aria-label="스트레스 풀기"><span>스트레스 풀기</span></button>
       <div class="stress-menu" id="stress-menu" hidden role="menu" aria-label="스트레스 풀기">
         <button class="tb" type="button" role="menuitem" id="st-scream">으아아아</button>
         <button class="tb" type="button" role="menuitem" id="st-wrap">뽁뽁이</button>
@@ -1391,6 +1393,7 @@ const tbHome = document.getElementById('tb-home'); tbHome.innerHTML = pixIcon('h
 const SCREAM_REACT = ['깜짝이야!','무슨 일이야?','나도 으아아','부장님 오셨어?','괜찮아 괜찮아','속 시원하다'];
 const stressBtn = document.getElementById('tb-stress'), stressMenu = document.getElementById('stress-menu');
 stressBtn.insertAdjacentHTML('afterbegin', pixIcon('hog'));
+document.getElementById('tb-tour').insertAdjacentHTML('afterbegin', pixIcon('map'));
 function toggleStress(open){ stressMenu.hidden = !open; stressBtn.setAttribute('aria-expanded', open);
   if(open) stressMenu.style.left = Math.max(4, Math.min(stressBtn.offsetLeft, stressBtn.parentElement.clientWidth - stressMenu.offsetWidth - 4)) + 'px'; }
 stressBtn.addEventListener('click', e => { e.stopPropagation(); toggleStress(stressMenu.hidden); });
