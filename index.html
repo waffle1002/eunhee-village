@@ -1956,9 +1956,11 @@ function updateOnline(){
   onlineEl.innerHTML = `<button type="button" class="hud-btn" id="who-btn" aria-expanded="${!document.getElementById('who').hidden && whoMode==='all'}" aria-controls="who" aria-label="주민 ${nRes}명, 눌러서 목록 보기" title="주민">${pixIcon('face')}<b>${nRes}</b></button><button type="button" class="hud-btn" id="hud-eye" title="오늘 방문자" aria-label="오늘 방문자 ${todayVisitors()}명, 눌러서 보기">${pixIcon('eye')}<b>${todayVisitors()}</b></button><button type="button" class="hud-btn" id="hud-coffee" title="오늘 주운 커피" aria-label="오늘 커피 ${coffeeGot.length}잔, 눌러서 설명 보기">${pixIcon('coffee')}<b>${coffeeGot.length}/${COFFEE_N}</b></button><button type="button" class="hud-btn" id="hud-chi" title="숨은 치이카와" aria-label="숨은 치이카와 ${chiFound?'찾음':'아직 못 찾음'}, 눌러서 설명 보기">${pixIcon('chi')}<b>${chiFound?1:0}<i class="hud-of">/1</i></b></button><button type="button" class="hud-btn" id="hud-mail" title="편지" aria-label="편지 ${allPosts().length}통, 눌러서 편지 쓰기">${pixIcon('mail')}<b>${allPosts().length}</b></button><button type="button" class="hud-btn" id="live-btn" aria-expanded="${!document.getElementById('who').hidden && whoMode==='live'}" aria-controls="who" title="지금 접속" aria-label="지금 ${room ? peerChars.size+1 : 1}명 접속 중, 눌러서 보기"><i class="live-dot" aria-hidden="true"></i><b>${room ? peerChars.size+1 : 1}</b></button>`;
 }
 function onPeers(change){
-  const seen = new Set();
+  const seen = new Set(), seenBy = new Set(), myAuth = isOwner ? ownerUid : uid;
   for(const p of change.peers){
     if(p.isMe || p.kind !== 'viewer') continue;
+    if(p.by && (p.by === myAuth || seenBy.has(p.by))) continue;   // 내 다른 창, 같은 사람의 여러 창은 한 번만
+    if(p.by) seenBy.add(p.by);
     if(!isHostPeer(p) && cleanName((p.presence||{}).name) === HOST_DEFAULT.name) continue;   // 손님 창의 은희는 숨김
     seen.add(p.peer);
     const pr = p.presence || {};
