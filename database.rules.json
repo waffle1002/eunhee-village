@@ -51,6 +51,18 @@
         ".write": "auth != null && auth.uid === $uid",
         ".validate": "newData.child('day').isString() && newData.child('day').val().length <= 12"
       }
+    },
+    "applies": {
+      ".read": "auth != null && (auth.token.email === 'eunhee100s2@gmail.com' && auth.token.email_verified === true)",
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || (auth.token.email === 'eunhee100s2@gmail.com' && auth.token.email_verified === true))",
+        ".write": "auth != null && (auth.uid === $uid || (auth.token.email === 'eunhee100s2@gmail.com' && auth.token.email_verified === true))",
+        "list": {
+          "$index": {
+            ".validate": "$index.matches(/^(0|[1-9]|1[0-9])$/)"
+          }
+        }
+      }
     }
   }
 }

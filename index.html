@@ -328,6 +328,19 @@ textarea{min-height:72px; resize:vertical}
 .gpost.reply{border:0; box-shadow:none}
 .gpost.reply .ghead b{font-size:11px}
 .ava{width:28px; height:46px}
+.qcard.applied{background:#FFF6D8}
+.qcard.applied .qgo{background:var(--berry); color:#fff}
+.apply-inbox{margin:0 0 10px; background:#fff; border:3px solid var(--frame); border-radius:4px; box-shadow:3px 3px 0 var(--frame); padding:8px 10px; font-family:var(--font-game)}
+.ai-head{display:flex; align-items:center; gap:6px; margin:0 0 6px; font-size:12px; font-weight:700; color:var(--frame)}
+.ai-head svg{width:14px; height:14px}
+.ai-head b{color:var(--berry)}
+.apply-inbox ul{list-style:none; margin:0; padding:0; display:grid; gap:4px; max-height:180px; overflow:auto}
+.apply-inbox li{display:flex; align-items:center; gap:6px; font-size:11px; min-width:0}
+.apply-inbox li img{width:9px; height:15px; image-rendering:pixelated; flex:none}
+.apply-inbox li b{flex:none; font-weight:700}
+.apply-inbox li span{flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.apply-inbox li em{flex:none; font-style:normal; font-family:var(--font-pixel); font-size:9px; color:var(--ink-soft)}
+.ai-empty{margin:0; font-size:11px; color:var(--ink-soft)}
 /* 퀘스트 신청: 게임 대화창 */
 .askpop .ask-box{width:min(340px, 92vw); background:#2C3B6B; color:#fff; font-family:var(--font-game); border:3px solid #fff; outline:3px solid #2C3B6B; border-radius:4px; padding:14px 16px 12px; box-shadow:0 6px 0 #1A2244}
 .askpop .ask-q{margin:0 0 4px; font-size:11px; color:#F2C94C}
@@ -1407,7 +1420,9 @@ const PANELS = {
   board: () => ({who:'퀘스트 게시판', html:`
     <div class="qhead"><h2>함께해요</h2><span class="qcount">퀘스트 ${OFFERS.length}개</span></div>
     <p class="lead">관심사가 같은 분들은 함께해요. 주인장과 일정 조율 필요</p>
-    <div class="qgrid">${OFFERS.map((o,i)=>`<button type="button" class="qcard" data-together="${i}" style="--q:${o.c}"><span class="qmark" aria-hidden="true">!</span><b>${o.t}</b><span class="qdesc">${o.d}</span><span class="qgo">신청</span></button>`).join('')}</div>`}),
+    ${isOwner ? applyInbox() : ''}
+    <div class="qgrid">${OFFERS.map((o,i)=>{ const n = applyCount(i), mine = myApplied(i);
+      return `<button type="button" class="qcard${mine?' applied':''}" data-together="${i}" style="--q:${o.c}"><span class="qmark" aria-hidden="true">!</span><b>${o.t}</b><span class="qdesc">${o.d}</span><span class="qgo">${isOwner ? `신청 ${n}` : mine ? '신청함' : '신청'}</span></button>`; }).join('')}</div>`}),
   mail: PANELS_MAIL,
 };
 function PANELS_MAIL(){ return {who:'우체통 방명록', html:`
@@ -1626,6 +1641,7 @@ const HOST_DEFAULT = {name:'은희', look:{acc:'flower', expr:'basic', hair:'#3A
 const villagers = new Map();   // uid -> {name, look}
 const guestDocs = new Map();   // uid -> {name, look, posts, likes}
 const visitDocs = new Map();   // uid -> {day}  오늘 방문자 세기
+const applyDocs = new Map();   // uid -> {name, look, list:[{q, t, at}]}  함께해요 신청 (주인장만 봄)
 const secretDocs = new Map();  // uid -> {name, look, posts}  주인장에게만 보낸 편지
 const peerChars = new Map();   // room peer -> character
 let residents = [];
@@ -1805,16 +1821,41 @@ function renderGuestList(){
 }
 function askQuest(i){
   const o = OFFERS[i], ap = document.getElementById('askpop'); sfx('boop');
+  if(isOwner){ say(player, `신청 ${applyCount(i)}명이에요`, 1600); return; }
+  const done = myApplied(i); ap.dataset.mode = done ? 'cancel' : 'apply';
   document.getElementById('qa-q').textContent = '퀘스트 ' + o.t;
+  document.getElementById('qa-t').textContent = done ? '이미 신청했어요. 취소할래요?' : '같이 할래요?';
+  document.getElementById('qa-yes').textContent = done ? '취소할래요..' : '넹..';
+  document.getElementById('qa-no').textContent = done ? '아니요..' : '다음에..';
   ap.hidden = false; ap.dataset.q = i; document.getElementById('qa-yes').focus({preventScroll:true});
 }
 function closeAsk(){ document.getElementById('askpop').hidden = true; }
+function applyCount(i){ let n = 0; for(const d of applyDocs.values()) if((d.list||[]).some(x => x.q === i)) n++; return n; }
+function myApplied(i){ const d = applyDocs.get(myKey()); return !!(d && (d.list||[]).some(x => x.q === i)); }
+function applyInbox(){
+  const rows = []; for(const [id, d] of applyDocs) for(const x of (d.list||[])) rows.push({name:cleanName(d.name)||'손님', look:d.look, t:x.t, at:+x.at||0});
+  rows.sort((a,b) => b.at - a.at);
+  return `<div class="apply-inbox"><p class="ai-head">${pixIcon('mail')}신청 알림 <b>${rows.length}</b></p>${rows.length ? `<ul>${rows.slice(0,30).map(r => `<li><img src="${avatar(cleanLook(r.look))}" alt=""><b>${esc(r.name)}</b><span>${esc(r.t)}</span><em>${fmt(r.at)}</em></li>`).join('')}</ul>` : '<p class="ai-empty">아직 신청이 없어요</p>'}</div>`;
+}
+function updateApplyBadge(){}
+async function saveApply(i, on){
+  const k = myKey(), cur = applyDocs.get(k) || {};
+  let list = (cur.list || []).filter(x => x.q !== i);
+  if(on) list.push({q:i, t:OFFERS[i].t, at:Date.now()});
+  list = list.slice(-20);
+  const next = {name: me ? me.name : '손님', look: me ? me.look : GHOST, list, updatedAt: Date.now()};
+  applyDocs.set(k, next); if(current === 'board') show('board');
+  if(db){ try{ await db.doc('applies/' + k).set(next); }catch(e){ say(player, '앗, 신청이 안 갔어요. 다시 해 볼래요?', 2200); } }
+}
 document.getElementById('qa-yes').addEventListener('click', () => {
-  const i = +document.getElementById('askpop').dataset.q; closeAsk(); sfx('coin');
-  prefill = '[같이 해요] ' + OFFERS[i].msg;
-  if(!me){ show('me'); const st=document.getElementById('cc-status'); if(st) st.textContent='캐릭터를 만들면 바로 방명록으로 이어져요.'; } else goTo('mail');
+  const ap = document.getElementById('askpop'), i = +ap.dataset.q, cancel = ap.dataset.mode === 'cancel'; closeAsk();
+  if(!me){ show('me'); const st=document.getElementById('cc-status'); if(st) st.textContent='캐릭터를 만들고 다시 신청해 주세요.'; return; }
+  if(cancel){ saveApply(i, false); sfx('boop'); say(player, '신청 취소했어요', 1600); return; }
+  saveApply(i, true); sfx('coin'); haptic([40,40,80]);
+  say(player, '신청 완료! 은희한테 알림이 갔어요', 2200);
+  if(!reduce) for(let k=0;k<10;k++) parts.push({x:player.x, y:player.y-14, vx:(Math.random()-.5)*2, vy:-.5-Math.random()*1.2, life:28, kind:'heart'});
 });
-document.getElementById('qa-no').addEventListener('click', () => { closeAsk(); say(player, '다음에 같이 해요', 1600); });
+document.getElementById('qa-no').addEventListener('click', () => { const c = document.getElementById('askpop').dataset.mode === 'cancel'; closeAsk(); say(player, c ? '계속 같이 해요' : '다음에 같이 해요', 1600); });
 document.getElementById('askpop').addEventListener('click', e => { if(e.target.id === 'askpop') closeAsk(); });
 document.getElementById('askpop').addEventListener('keydown', e => {
   if(e.key === 'Escape') closeAsk();
@@ -2028,6 +2069,10 @@ function refreshPanels(){ if(current==='mail') renderGuestList(); renderMiniGues
       updateOnline();
     }, () => {});
     if(uid && !isOwner) db.doc('visits/'+uid).set({day: todayKey(), at: Date.now()}).catch(()=>{});
+    db.collection('applies').onSnapshot(snap => {
+      applyDocs.clear(); for(const d of snap.docs){ const v = d.data(); if(v) applyDocs.set(d.id, v); }
+      if(current==='board') show('board'); updateApplyBadge();
+    }, () => {});
     db.collection('secret').onSnapshot(snap => {
       secretDocs.clear(); for(const d of snap.docs){ const v = d.data(); if(v) secretDocs.set(d.id, v); }
       if(current==='mail') renderGuestList();

@@ -36,9 +36,9 @@ window.VILLAGE_OWNER_EMAIL = window.VILLAGE_OWNER_EMAIL || "eunhee100s2@gmail.co
     collection: name => ({
       onSnapshot(cb, err){
         ready.then(u => {
-          if(name === 'secret' && !isOwnerUser(u)){   // 비밀 편지: 주인장 말고는 내 것만
+          if((name === 'secret' || name === 'applies') && !isOwnerUser(u)){   // 비밀 편지: 주인장 말고는 내 것만
             if(!u) return;
-            rtdb.ref('secret/' + u.uid).on('value', s => cb(snapOf(s.val() ? { [u.uid]: s.val() } : {})), e => err && err(e));
+            rtdb.ref(name + '/' + u.uid).on('value', s => cb(snapOf(s.val() ? { [u.uid]: s.val() } : {})), e => err && err(e));
             return;
           }
           rtdb.ref(name).on('value', s => cb(snapOf(s.val())), e => err && err(e));
