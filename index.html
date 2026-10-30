@@ -29,7 +29,7 @@
   --berry:#E0566A;      /* 포인트(버튼) */
   --berry-d:#B23A4E;
   --banana:#F2C94C;
-  --font-display:"Galmuri11", "Jua", "Gowun Dodum", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --font-display:"Jua", "Gowun Dodum", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
   --font-body:"Galmuri11", "Gowun Dodum", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
   --font-pixel:"Silkscreen", ui-monospace, monospace;
 }
@@ -2272,6 +2272,18 @@ document.getElementById('fun-ok').addEventListener('click', closeFun);
 document.getElementById('fun-x').addEventListener('click', closeFun);
 document.getElementById('funpop').addEventListener('click', e => { if(e.target.id==='funpop') closeFun(); });
 requestAnimationFrame(frame);
+/* 픽셀 글씨(갈무리11)는 12px 배수에서만 또렷해서, 애매한 크기를 12px/24px로 맞춤 */
+const snapQ = new Set(); let snapRaf = 0;
+function snapFont(el){
+  if(el.nodeType !== 1 || el.id === 'fun-big' || el.closest('svg')) return;
+  if(!/^(INPUT|TEXTAREA|BUTTON)$/.test(el.tagName) && ![...el.childNodes].some(n => n.nodeType === 3 && n.textContent.trim())) return;
+  const cs = getComputedStyle(el); if(!cs.fontFamily.startsWith('Galmuri')) return;
+  const px = parseFloat(cs.fontSize); if(px === 12 || px === 24) return;
+  el.style.fontSize = (px >= 19 ? 24 : 12) + 'px';
+}
+function snapAll(root){ snapFont(root); root.querySelectorAll?.('*').forEach(snapFont); }
+new MutationObserver(ms => { ms.forEach(m => m.addedNodes.forEach(n => n.nodeType === 1 && snapQ.add(n))); if(!snapRaf) snapRaf = requestAnimationFrame(() => { snapRaf = 0; snapQ.forEach(snapAll); snapQ.clear(); }); }).observe(document.body, {childList:true, subtree:true});
+if(document.fonts) document.fonts.ready.then(() => snapAll(document.body)); snapAll(document.body);
 })();
 </script>
 
