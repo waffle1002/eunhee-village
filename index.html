@@ -409,7 +409,8 @@ input, textarea{-webkit-user-select:text !important; user-select:text !important
 @media (max-width:560px){.titlebar h1{white-space:nowrap; font-size:18px} .titlebar{gap:6px} .tb-hud .hud-btn, .tb-hud span{padding:2px 4px; gap:2px} .tb-hud{gap:3px} .tb-hud svg{width:11px; height:11px} .tb-hud b{font-size:10px} .live-dot{width:6px; height:6px}}
 .tb-hud svg{width:14px; height:14px}
 .tb-hud b{font-family:var(--font-pixel); font-size:12px}
-@media (max-width:560px){.toolbar{gap:3px; padding:0 5px 8px} .toolbar .tb{font-size:13px; padding:2px 5px} .toolbar .tb-home, .toolbar .tb-ico{min-width:26px; padding:2px 4px} .tb-long{display:none}}
+@media (max-width:560px){.toolbar{gap:3px; padding:0 5px 8px} .toolbar .tb{font-size:12.5px; padding:2px 5px} .tb-stress{gap:3px} .tb-stress svg{width:13px; height:13px} .toolbar .tb-home, .toolbar .tb-ico{min-width:26px; padding:2px 4px} .tb-long{display:none}}
+@media (max-width:370px){.toolbar{gap:2px; padding:0 4px 8px} .toolbar .tb{font-size:12px; padding:2px 4px}}
 .live-dot{display:inline-block; width:8px; height:8px; margin:0 2px; background:#3CCB7F; box-shadow:0 0 0 2px #3ccb7f44}
 .hello-ava{width:30px; height:50px; image-rendering:pixelated; flex:none}
 .hello-say{position:relative; margin:0; background:#fff; border:2px solid var(--ink); border-radius:10px; padding:6px 12px; font-family:var(--font-display); font-size:clamp(15px,2.2vw,19px); line-height:1.3}
@@ -503,12 +504,12 @@ button.item:hover{border-color:var(--berry)}
     </div>
     <div class="toolbar">
       <button class="tb tb-home" id="tb-home" type="button" aria-label="홈으로">홈</button>
-      <button class="tb" id="tb-tour" type="button">마을 한 바퀴</button>
+      <button class="tb" id="tb-tour" type="button"><span class="tb-long">마을 </span>한 바퀴</button>
       <button class="tb tb-ico" id="tb-sound" type="button" aria-pressed="false" aria-label="효과음 켜기" title="효과음"></button>
       <button class="tb" id="tb-time" type="button" aria-pressed="false">노을<span class="tb-long"> 모드</span></button>
       <button class="tb tb-party" id="tb-party" type="button">파티<span class="tb-long"> 모드</span></button>
       <button class="tb" id="tb-lunch" type="button">점심<span class="tb-long"> 뭐 먹지</span></button>
-      <button class="tb tb-stress" id="tb-stress" type="button" aria-expanded="false" aria-controls="stress-menu" aria-label="스트레스 풀기"><span class="tb-long">스트레스</span></button>
+      <button class="tb tb-stress" id="tb-stress" type="button" aria-expanded="false" aria-controls="stress-menu" aria-label="스트레스 풀기"><span>스트레스</span></button>
       <div class="stress-menu" id="stress-menu" hidden role="menu" aria-label="스트레스 풀기">
         <button class="tb" type="button" role="menuitem" id="st-scream">으아아아</button>
         <button class="tb" type="button" role="menuitem" id="st-wrap">뽁뽁이</button>
