@@ -1118,7 +1118,7 @@ function frame(t){
   for(const c of peerChars.values()) if(c.hop>0) c.hop--;
   movePeers(); sendPresence(); checkBumps(); funTick(); partyTick();
   if(bubbleTimer % 170 === 85){ const pool=[...residents, ...(showHost?[host]:[])]; if(pool.length){ const r=pool[(Math.random()*pool.length)|0]; say(r, r===host ? host.lines[(Math.random()*3)|0] : [`안녕! 나는 ${r.name}`,`${r.name} 산책 중`,'오늘 날씨 좋다~'][(Math.random()*3)|0], 2200); } }
-  if(++bubbleTimer % 110 === 0){ const i=(Math.random()*npcs.length)|0; const n=npcs[i]; bubbles[i].textContent=n.lines[(Math.random()*n.lines.length)|0]; bubbles[i].style.opacity=1; setTimeout(()=>bubbles[i].style.opacity=0,2200); }
+  if(++bubbleTimer % 110 === 0){ const i=(Math.random()*npcs.length)|0; const n=npcs[i]; bubbles[i].textContent=(cheerTime() && Math.random() < .7 ? CHEER_LINES[(Math.random()*CHEER_LINES.length)|0] : n.lines[(Math.random()*n.lines.length)|0]); bubbles[i].style.opacity=1; setTimeout(()=>bubbles[i].style.opacity=0,2200); }
   ctx.drawImage(g,0,0);
   // water shimmer
   const sh = Math.floor(tick/12)%3; R(ctx,128+sh*6,160+sh,6,1,'#BDE6F8');
@@ -1625,6 +1625,10 @@ function sendPresence(){
 
 /* bumping: hop, hearts, a little line */
 const parts = [];
+/* 2026-10-30 규선이(은희 아는 동생) 발표 끝난 뒤 (한국 시간 16시~18시) 응원 */
+const CHEER_FROM = Date.UTC(2026, 9, 30, 7, 0), CHEER_TO = Date.UTC(2026, 9, 30, 9, 0);
+const cheerTime = () => { const t = Date.now(); return t >= CHEER_FROM && t < CHEER_TO; };
+const CHEER_LINES = ['규선아 발표 고생했어!','규선이 오늘 발표 멋졌어','떨렸을 텐데 진짜 잘했어, 규선아','발표 끝! 규선이 이제 푹 쉬어','오늘의 주인공은 규선이','규선이한테 박수 짝짝짝','발표한 날은 맛있는 거 먹는 날이야','규선아 오늘 하루 정말 수고 많았어','긴장 풀고 따뜻한 차 한 잔 해','규선이는 잘 해낼 줄 알았어']
 const BUMP_LINES = ['앗!','안녕!','반가워요~','깜짝이야!','하이파이브!','어머 미안!','같이 걸을래요?','혹시 퇴근하세요?','커피 주우러 가는 길?','오늘도 수고했어요'];
 function others(){ return [...npcs, ...residents, ...(showHost?[host]:[]), ...peerChars.values()]; }
 function checkBumps(){
@@ -1636,7 +1640,7 @@ function checkBumps(){
       const mx = (o.x+player.x)/2, my = Math.min(o.y, player.y) - 18;
       for(let i=0;i<4;i++) parts.push({x:mx + (i-1.5)*4, y:my, vx:(i-1.5)*.25, vy:-.6 - Math.random()*.4, life:34, kind: i%2 ? 'heart' : 'star'});
       if(o.route){ o.wait = 25; o.face = player.x < o.x ? -1 : 1; }
-      say(o, BUMP_LINES[(Math.random()*BUMP_LINES.length)|0], 1600);
+      say(o, (cheerTime() ? CHEER_LINES : BUMP_LINES)[(Math.random()*(cheerTime() ? CHEER_LINES : BUMP_LINES).length)|0], 1600);
       sfx('boop');
     }
   }
