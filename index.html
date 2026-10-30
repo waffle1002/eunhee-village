@@ -411,6 +411,9 @@ input, textarea{-webkit-user-select:text !important; user-select:text !important
 .facts b{flex:none; width:3.2em; font-family:var(--font-display); font-weight:400; color:var(--wood); font-size:14px}
 .facts span{min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:15px}
 @media (max-width:560px){.me{gap:12px; flex-wrap:nowrap} #me-cv{width:52px; height:78px} .me h2{font-size:20px; margin-bottom:2px} .me .lead{font-size:14px; line-height:1.55} .facts span{font-size:14px}}
+.me .lead, .facts span{font-family:var(--font-game); font-size:13px; line-height:1.7; letter-spacing:0}
+.facts b{font-family:var(--font-game); font-size:12px; color:var(--wood)}
+@media (max-width:560px){.me .lead{font-size:12px} .facts span{font-size:12px}}
 
 .chip{font-family:var(--font-display); font-size:14px; background:#fff; color:var(--ink); border:2px solid var(--paper-2); border-radius:20px; padding:1px 12px; cursor:pointer}
 .chip[aria-pressed="true"]{background:var(--wood); color:var(--paper); border-color:var(--wood)}
